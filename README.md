@@ -30,8 +30,8 @@ dei final layers.
 - `losses.py`: definizione delle funzioni di loss personalizzate.
 
 ### 🔁 Test e sperimentazioni varie
-- `find_truncated_layers.py`: script sperimentale, probabilmente legato a test o saliency map.
-- `pattlite_prova.py`: versione di prova dello script precedente.
+- `find_truncated_layers.py`: script per la ricerca del miglior layer di troncamento.
+- `backbone.py`: definisce l'architettura dei modelli.
 
 ---
 
@@ -40,6 +40,5 @@ Contiene gli script per il lancio dei job su cluster HPC tramite SLURM.
 ---
 
 ## ℹ️ Note
-- Tutti gli script sono scritti in Python e organizzati per una pipeline modulare e riutilizzabile.
-- Gli script relativi a ottimizzazione, fine-tuning e data loading sono separati per facilitare il controllo delle sperimentazioni.
+- I modelli preaddestrati e i risultati ottenuti è possibile trovarli al link [Drive](https://drive.google.com/drive/folders/190lg4UPtDAOTYNwVwmCeQHpThr2FS5AX?usp=share_link)
 
