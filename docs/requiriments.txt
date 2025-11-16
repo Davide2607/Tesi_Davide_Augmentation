@@ -1,0 +1,66 @@
+###### HPC ######  
+If running on hpc, just run sbatch_meta/install_conda_env.sbatch  
+
+
+
+######=======================================================########
+######=======================================================########
+######=======================================================########
+######=======================================================########
+
+
+#### Windows ####  
+# note that I couldn't get the cuda-toolkit (nvidia/label/cuda-12.2.0) to 
+# install properly on my windows machine until I used a VPN, idk why.
+
+conda --version
+
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
+conda create -n fer-thesis python=3.11 -y
+echo "=========================================================================="
+echo "Created venv!"
+echo "=========================================================================="
+
+##### NOTE: TRY ACTIVATION BEFORE GOING FORWARD, THEN RUN ALL THE FORWARD WITH ACTIVATION INCLUDED ######
+conda activate fer-thesis
+echo "=========================================================================="
+echo "Activated venv!"
+python -c "import sys; print('Python executable:', sys.executable); print('Environment:', sys.prefix)"
+echo "=========================================================================="
+
+
+python -m pip install --upgrade pip setuptools wheel
+echo "=========================================================================="
+echo "Upgraded pip!"
+echo "=========================================================================="
+
+conda install -y nvidia/label/cuda-12.2.0::cuda-toolkit
+echo "=========================================================================="
+echo "Installed cudatoolkit 12.2"
+echo "=========================================================================="
+
+conda install -y cudnn=8.9 -c conda-forge
+echo "=========================================================================="
+echo "Installed cudnn 8.9"
+echo "=========================================================================="
+
+python -m pip install tensorflow-io-gcs-filesystem==0.31.0
+echo "=========================================================================="
+echo "Installed tf io-gs-fs!"
+echo "=========================================================================="
+
+python -m pip install tensorflow==2.15.0
+echo "=========================================================================="
+echo "Installed tf!"
+echo "=========================================================================="
+
+python -m pip install h5py "numpy>=1.23.5,<2.0.0" Pillow scikit-learn ultralytics gdown mediapipe
+echo "=========================================================================="
+echo "Installed other dependencies! (h5, np, PIL, skl, ultralytics)"
+echo "=========================================================================="
+
+
+python -c "import sys; print('Python executable:', sys.executable); print('Environment:', sys.prefix)"
+python -c "import tensorflow as tf; print('tf',tf.__version__); print(tf.sysconfig.get_build_info()); print('gpus:', tf.config.list_physical_devices('GPU'))"
