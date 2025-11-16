@@ -2,10 +2,12 @@
 #SBATCH --job-name=${USER}_FER_Augment
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=davideravida498@gmail.com
-#SBATCH --partition=cpu_skylake   
+#SBATCH --partition=gpu_v100
+#SBATCH --time=00:10:00
 #SBATCH --nodes=1
-#SBATCH --mem=100M
+#SBATCH --mem=1G
 #SBATCH --ntasks-per-node=1
+#SBATCH --gres=gpu:1
 #SBATCH --output=$HOME/models/FER-Augmentation/out_err/train_%j.log
 #SBATCH --error=$HOME/models/FER-Augmentation/out_err/train_%j.log
 
@@ -18,6 +20,10 @@ module load miniconda3/3.13.25
 ENV_NAME="fer_augmentation"
 eval "$(conda shell.bash hook)"
 conda activate "$ENV_NAME"
+
+# Export library paths for CUDA/cuDNN
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:$LD_LIBRARY_PATH"
+export XLA_FLAGS="--xla_gpu_cuda_data_dir=$CONDA_PREFIX"
 
 
 echo "=========================================================================="
