@@ -12,6 +12,6 @@
 #SBATCH --error=err_log/train_%j.err
 module load intel/python/3/2019.4.088
 module load nvidia/cudasdk/11.6
-source /home/famato/myvenv/bin/activate
-cd /home/famato/final_scripts/scripts
+source $HOME/myvenv/bin/activate
+cd $HOME/final_scripts/scripts
 python  train_final_new.py --model_name PattLite --TRAIN_EPOCH 300  --dropout_rate 0.151843396689746 --learning_rate 0.000975778223460793 --l2_reg 0.003980969038212365

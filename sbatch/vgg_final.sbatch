@@ -12,6 +12,6 @@
 #SBATCH --error=err_log/train_%j.err
 module load intel/python/3/2019.4.088
 module load nvidia/cudasdk/11.6
-source /home/famato/myvenv/bin/activate
-cd /home/famato/final_scripts/scripts
+source $HOME/myvenv/bin/activate
+cd $HOME/final_scripts/scripts
 python  train_final_new.py --model_name VGG19 --TRAIN_EPOCH 300  --dropout_rate 0.38551780692363447 --learning_rate 0.0007274302565010187 --l2_reg 0.015203311963007171

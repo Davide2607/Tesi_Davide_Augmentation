@@ -23,7 +23,7 @@ def loading_data():
                 y = np.array(f['y_test'])
                 return x, y, class_names
 
-    file_path = '/home/famato/final_scripts/dataset' #path del dataset 
+    file_path = os.path.expanduser('~/final_scripts/dataset') # path del dataset (uses HOME)
     train_path = os.path.join( file_path, 'dataset.h5')
     test_path = os.path.join(file_path, 'test_data_adele.h5')
 

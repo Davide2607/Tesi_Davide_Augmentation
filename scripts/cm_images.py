@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import tensorflow as tf
 from neptune_init import init_neptune
 import argparse
@@ -229,19 +230,21 @@ def main():
 
         model = Model(inputs=input_layer, outputs=outputs, name='train-head')
         model.summary(show_trainable=True)
-        model.load_weights(f'/home/famato/final_scripts/scripts/model/finetuning/pretrained_EfficientNetB1_finetuning_weights.h5')
+        BASE = os.path.expanduser('~/final_scripts')
+        model.load_weights(f'{BASE}/scripts/model/finetuning/pretrained_EfficientNetB1_finetuning_weights.h5')
         model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate, global_clipnorm=3.0),
                   loss= categorical_focal_loss(alpha=0.25, gamma=2.0),
                   metrics=['categorical_accuracy'])
         efficientnet = model
     with tf.keras.utils.custom_object_scope(custom_objects):
         
-        convnext = tf.keras.models.load_model(f'/home/famato/final_scripts/scripts/model/finetuning/pretrained_ConvNeXt_finetuning')
-        pattlite = tf.keras.models.load_model(f'/home/famato/final_scripts/scripts/model/finetuning/pretrained_PattLite_finetuning')
-        vgg19 = tf.keras.models.load_model(f'/home/famato/final_scripts/scripts/model/finetuning/pretrained_VGG19_finetuning')
-        #efficientnet = tf.keras.models.load_model(f'/home/famato/final_scripts/scripts/model/finetuning/pretrained_EfficientNetB1_finetuning')
-        resnet50 = tf.keras.models.load_model(f'/home/famato/final_scripts/scripts/model/finetuning/pretrained_ResNet_finetuning')
-        inception = tf.keras.models.load_model(f'/home/famato/final_scripts/scripts/model/finetuning/pretrained_InceptionV3_finetuning')
+        BASE = os.path.expanduser('~/final_scripts')
+        convnext = tf.keras.models.load_model(f'{BASE}/scripts/model/finetuning/pretrained_ConvNeXt_finetuning')
+        pattlite = tf.keras.models.load_model(f'{BASE}/scripts/model/finetuning/pretrained_PattLite_finetuning')
+        vgg19 = tf.keras.models.load_model(f'{BASE}/scripts/model/finetuning/pretrained_VGG19_finetuning')
+        #efficientnet = tf.keras.models.load_model(f'{BASE}/scripts/model/finetuning/pretrained_EfficientNetB1_finetuning')
+        resnet50 = tf.keras.models.load_model(f'{BASE}/scripts/model/finetuning/pretrained_ResNet_finetuning')
+        inception = tf.keras.models.load_model(f'{BASE}/scripts/model/finetuning/pretrained_InceptionV3_finetuning')
 
     models_run = [pattlite, efficientnet, vgg19, resnet50, inception, convnext]
 

@@ -18,13 +18,13 @@ conda --version
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
 conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
-conda create -n fer-thesis python=3.11 -y
+conda create -n fer_augmentation python=3.11 -y
 echo "=========================================================================="
 echo "Created venv!"
 echo "=========================================================================="
 
 ##### NOTE: TRY ACTIVATION BEFORE GOING FORWARD, THEN RUN ALL THE FORWARD WITH ACTIVATION INCLUDED ######
-conda activate fer-thesis
+conda activate fer_augmentation
 echo "=========================================================================="
 echo "Activated venv!"
 python -c "import sys; print('Python executable:', sys.executable); print('Environment:', sys.prefix)"
