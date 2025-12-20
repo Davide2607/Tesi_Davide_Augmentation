@@ -7,9 +7,14 @@
 #SBATCH --nodes=1
 #SBATCH --mem=100M
 #SBATCH --ntasks-per-node=1
-#SBATCH --output=$HOME/models/FER-Augmentation/out_err/train_%j.log
-#SBATCH --error=$HOME/models/FER-Augmentation/out_err/train_%j.log
+#SBATCH --output=%x_%j.log
+#SBATCH --error=%x_%j.log
 
+# Setup robust logging: create log directory and redirect stdout/stderr to per-job log in $HOME
+LOGDIR="$HOME/models/FER-Augmentation/out_err"
+mkdir -p "$LOGDIR"
+JOB_ID="${SLURM_JOB_ID:-$$}"
+exec > "$LOGDIR/train_${JOB_ID}.log" 2>&1
 
 
 # =====================================================================================
