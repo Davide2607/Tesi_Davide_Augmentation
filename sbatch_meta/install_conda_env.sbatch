@@ -3,7 +3,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=davideravida498@gmail.com
 #SBATCH --partition=cpu_skylake
-#SBATCH --time=00:10:00
+#SBATCH --time=00:30:00
 #SBATCH --nodes=1
 #SBATCH --mem=100M
 #SBATCH --ntasks-per-node=1
