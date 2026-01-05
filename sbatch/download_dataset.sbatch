@@ -13,7 +13,7 @@ echo "Scaricamento dataset da Google Drive..."
 mkdir -p ~/data
 
 # Scarica il dataset da Google Drive (usa direttamente il path Python)
-GDRIVE_FILE_ID="1LLW2MGp-JDIqYdt0QPAz65DpGhlAbcGC"
+GDRIVE_FILE_ID="1RqqDESsSLoCS3NsTYUfrMzEVM7cV8RAF"
 OUTPUT_PATH="$HOME/data/dataset.h5"
 
 /home/dravida/.conda/envs/fer_augmentation/bin/gdown "https://drive.google.com/uc?id=$GDRIVE_FILE_ID" -O "$OUTPUT_PATH"
