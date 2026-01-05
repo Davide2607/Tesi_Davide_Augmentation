@@ -9,18 +9,14 @@
 
 echo "Scaricamento dataset da Google Drive..."
 
-# Attiva ambiente conda
-eval "$(/home/dravida/.conda/bin/conda shell.bash hook)"
-conda activate fer_augmentation
-
 # Crea cartella dati
 mkdir -p ~/data
 
-# Scarica il dataset da Google Drive
+# Scarica il dataset da Google Drive (usa direttamente il path Python)
 GDRIVE_FILE_ID="1LLW2MGp-JDIqYdt0QPAz65DpGhlAbcGC"
 OUTPUT_PATH="$HOME/data/dataset.h5"
 
-/home/dravida/.conda/envs/fer_augmentation/bin/gdown "$GDRIVE_FILE_ID" -O "$OUTPUT_PATH"
+/home/dravida/.conda/envs/fer_augmentation/bin/gdown "https://drive.google.com/uc?id=$GDRIVE_FILE_ID" -O "$OUTPUT_PATH"
 
 # Verifica il file
 if [ -f "$OUTPUT_PATH" ]; then
