@@ -22,19 +22,28 @@ echo "Job started at $(date)"
 echo "Job ID: $JOB_ID"
 echo "=========================================================================="
 
-# Attiva l'ambiente conda
-source /home/dravida/.bashrc
-eval "$(/home/dravida/.conda/bin/conda shell.bash hook)"
-conda activate fer_augmentation
+# Check GPU availability
+echo "=========================================================================="
+echo "GPU Info:"
+nvidia-smi || echo "nvidia-smi not available on login node"
+echo "=========================================================================="
+
+# Setup environment variables for CUDA from conda env
+export CONDA_ENV_PATH="/home/dravida/.conda/envs/fer_augmentation"
+export LD_LIBRARY_PATH="$CONDA_ENV_PATH/lib:$LD_LIBRARY_PATH"
+export XLA_FLAGS="--xla_gpu_cuda_data_dir=$CONDA_ENV_PATH"
+export PATH="$CONDA_ENV_PATH/bin:$PATH"
 
 echo "=========================================================================="
-echo "Python executable: $(which python)"
-python --version
+echo "Environment setup:"
+echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+echo "Python: $CONDA_ENV_PATH/bin/python"
+$CONDA_ENV_PATH/bin/python --version
 echo "=========================================================================="
 
 # Esegui il training
 cd /home/dravida/Tesi_Davide_Augmentation
-/home/dravida/.conda/envs/fer_augmentation/bin/python WGAN_GP_DATA_AUGMENTATION.py
+$CONDA_ENV_PATH/bin/python WGAN_GP_DATA_AUGMENTATION.py
 
 echo "=========================================================================="
 echo "Job finished at $(date)"
