@@ -296,7 +296,7 @@ classifier.fit(
     steps_per_epoch=max(1, len(X_train_cls) // CLASSIFIER_BATCH_SIZE),
     validation_data=val_gen,
     validation_steps=max(1, len(X_val_cls) // CLASSIFIER_BATCH_SIZE),
-    epochs=10,
+    epochs=20,
     callbacks=callbacks,
     verbose=1
 )
@@ -307,7 +307,7 @@ for layer in base_model.layers[:-30]:
     layer.trainable = False
 
 classifier.compile(
-    optimizer=tf.keras.optimizers.Adam(1e-4),
+    optimizer=tf.keras.optimizers.Adam(5e-4),
     loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
 )
@@ -317,7 +317,7 @@ classifier.fit(
     steps_per_epoch=max(1, len(X_train_cls) // CLASSIFIER_BATCH_SIZE),
     validation_data=val_gen,
     validation_steps=max(1, len(X_val_cls) // CLASSIFIER_BATCH_SIZE),
-    epochs=15,
+    epochs=25,
     callbacks=callbacks,
     verbose=1
 )
@@ -346,7 +346,7 @@ pred_confidences = np.max(predictions, axis=1)
 # Etichette sintetiche sono mappate [0..num_classes-1]; converti all'id originale per il confronto
 orig_labels = np.array([rare_idx[idx] for idx in synth_labels])
 
-CONFIDENCE_THRESHOLD = 0.70
+CONFIDENCE_THRESHOLD = 0.5
 mask_confident = pred_confidences >= CONFIDENCE_THRESHOLD
 mask_correct_class = pred_classes == orig_labels
 mask_keep = mask_confident & mask_correct_class
