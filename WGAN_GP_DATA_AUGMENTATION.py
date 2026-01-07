@@ -285,9 +285,15 @@ val_datagen = ImageDataGenerator(rescale=1./255)
 train_gen = train_datagen.flow(X_train_cls, y_train_cls, batch_size=CLASSIFIER_BATCH_SIZE, shuffle=True)
 val_gen = val_datagen.flow(X_val_cls, y_val_cls, batch_size=CLASSIFIER_BATCH_SIZE, shuffle=False)
 
+# Calcola pesi di classe per gestire lo sbilanciamento
+class_counts = np.bincount(y_train_cls, minlength=len(class_names))
+total_samples = class_counts.sum()
+class_weights = {i: float(total_samples / (len(class_names) * class_counts[i])) for i in range(len(class_names))}
+print('Class weights:', class_weights)
+
 callbacks = [
     ModelCheckpoint(BEST_CLASSIFIER_PATH, monitor='val_accuracy', mode='max', save_best_only=True, verbose=1),
-    EarlyStopping(monitor='val_accuracy', patience=5, restore_best_weights=True, verbose=1)
+    EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
 ]
 
 print('\n--- Phase 1: Training head (base frozen) ---')
@@ -296,14 +302,15 @@ classifier.fit(
     steps_per_epoch=max(1, len(X_train_cls) // CLASSIFIER_BATCH_SIZE),
     validation_data=val_gen,
     validation_steps=max(1, len(X_val_cls) // CLASSIFIER_BATCH_SIZE),
-    epochs=20,
+    epochs=30,
+    class_weight=class_weights,
     callbacks=callbacks,
     verbose=1
 )
 
 print('\n--- Phase 2: Fine-tuning ---')
 base_model.trainable = True
-for layer in base_model.layers[:-30]:
+for layer in base_model.layers[:-80]:
     layer.trainable = False
 
 classifier.compile(
@@ -317,7 +324,8 @@ classifier.fit(
     steps_per_epoch=max(1, len(X_train_cls) // CLASSIFIER_BATCH_SIZE),
     validation_data=val_gen,
     validation_steps=max(1, len(X_val_cls) // CLASSIFIER_BATCH_SIZE),
-    epochs=25,
+    epochs=40,
+    class_weight=class_weights,
     callbacks=callbacks,
     verbose=1
 )
