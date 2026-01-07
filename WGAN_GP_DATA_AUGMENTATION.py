@@ -74,12 +74,12 @@ print('Rare subset', X_rare.shape, y_onehot.shape)
 
 IMG_SHAPE = (128,128,3)
 NOISE_DIM = 100
-BATCH_SIZE = 64
-LR_C = 5e-5
-LR_G = 2e-4
-BETA1 = 0.5
-LAMBDA_GP = 20
-CRITIC_STEPS = 4
+BATCH_SIZE = 128
+LR_C = 1e-4
+LR_G = 1e-4
+BETA1 = 0.0
+LAMBDA_GP = 10
+CRITIC_STEPS = 6
 
 # ## Section 7: Definizione modelli WGAN-GP
 
