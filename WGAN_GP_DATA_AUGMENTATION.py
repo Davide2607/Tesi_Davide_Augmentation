@@ -314,7 +314,7 @@ for layer in base_model.layers[:-80]:
     layer.trainable = False
 
 classifier.compile(
-    optimizer=tf.keras.optimizers.Adam(5e-4),
+    optimizer=tf.keras.optimizers.Adam(1e-4),
     loss='sparse_categorical_crossentropy',
     metrics=['accuracy']
 )
