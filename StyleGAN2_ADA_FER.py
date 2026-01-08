@@ -23,6 +23,7 @@ import subprocess
 import sys
 import urllib.request
 from pathlib import Path
+from typing import Optional
 
 
 REPO_URL = "https://github.com/NVlabs/stylegan2-ada-pytorch.git"
@@ -82,7 +83,7 @@ def maybe_prepare_dataset(source_dir: Path, dest_zip: Path):
   run([sys.executable, "dataset_tool.py", "--source", str(source_dir), "--dest", str(dest_zip)], cwd=REPO_DIR)
 
 
-def train(data_zip: Path, outdir: Path, gpus: int, kimg: int, resume: Path | None, aug: str, cfg: str, workers: int):
+def train(data_zip: Path, outdir: Path, gpus: int, kimg: int, resume: Optional[Path], aug: str, cfg: str, workers: int):
   cmd = [
     sys.executable,
     "train.py",
