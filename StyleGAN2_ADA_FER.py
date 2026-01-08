@@ -26,7 +26,7 @@ from pathlib import Path
 
 
 REPO_URL = "https://github.com/NVlabs/stylegan2-ada-pytorch.git"
-PRETRAINED_URL = "https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan2-ada-pytorch/versions/1/files/ffhq.pkl"
+PRETRAINED_URL = "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/ffhq-512-avg-tpurun1.pkl"
 REPO_DIR = Path("stylegan2-ada-pytorch")
 
 
