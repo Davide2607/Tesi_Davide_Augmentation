@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -p gpu_a40
 #SBATCH -J export_h5
-#SBATCH -o ~/models/FER-Augmentation/out_err/export_h5_%j.out
-#SBATCH -e ~/models/FER-Augmentation/out_err/export_h5_%j.err
+#SBATCH -o /home/dravida/models/FER-Augmentation/out_err/export_h5_%j.out
+#SBATCH -e /home/dravida/models/FER-Augmentation/out_err/export_h5_%j.err
 #SBATCH -c 2
 #SBATCH --mem=8G
 #SBATCH -t 02:00:00
@@ -12,7 +12,7 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate fer_augmentation
 
 # Ensure log directory exists before Slurm writes files
-mkdir -p ~/models/FER-Augmentation/out_err
+mkdir -p /home/dravida/models/FER-Augmentation/out_err
 
 # Move into the project directory on the cluster
 cd ~/Tesi_Davide_Augmentation || exit 1
