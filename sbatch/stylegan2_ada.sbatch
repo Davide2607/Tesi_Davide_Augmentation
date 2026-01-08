@@ -24,7 +24,7 @@ KIMG=600                                    # durata training in kimg
 GEN_OUT=~/models/stylegan2_generated_disgust # output immagini generate
 RESUME=                                     # opzionale: snapshot .pkl da cui riprendere (default ffhq)
 GPUS=1
-AUG=ada
+AUG=noaug
 CFG=auto
 WORKERS=2
 
