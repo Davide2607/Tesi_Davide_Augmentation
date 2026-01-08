@@ -26,7 +26,11 @@ from pathlib import Path
 
 
 REPO_URL = "https://github.com/NVlabs/stylegan2-ada-pytorch.git"
-PRETRAINED_URL = "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/ffhq-512-avg-tpurun1.pkl"
+# List of mirrors in order; first valid one wins
+PRETRAINED_URLS = [
+  "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl",
+  "https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/ffhq-512-avg-tpurun1.pkl",
+]
 REPO_DIR = Path("stylegan2-ada-pytorch")
 
 
@@ -55,8 +59,18 @@ def download_pretrained(dest: Path):
     print(f"Pretrained gia' presente: {dest}")
     return
   dest.parent.mkdir(parents=True, exist_ok=True)
-  print(f"Scarico pretrained da {PRETRAINED_URL} -> {dest}")
-  urllib.request.urlretrieve(PRETRAINED_URL, dest)
+
+  last_err = None
+  for url in PRETRAINED_URLS:
+    try:
+      print(f"Scarico pretrained da {url} -> {dest}")
+      urllib.request.urlretrieve(url, dest)
+      print("Download OK")
+      return
+    except Exception as e:  # pragma: no cover - interactive download
+      print(f"Download fallito da {url}: {e}")
+      last_err = e
+  raise last_err if last_err else RuntimeError("Download pretrained fallito")
 
 
 def maybe_prepare_dataset(source_dir: Path, dest_zip: Path):
