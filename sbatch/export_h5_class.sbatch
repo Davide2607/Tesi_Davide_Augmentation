@@ -11,7 +11,11 @@
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate fer_augmentation
 
-cd ~/Tesi_Davide || exit 1
+# Ensure log directory exists before Slurm writes files
+mkdir -p ~/models/FER-Augmentation/out_err
+
+# Move into the project directory on the cluster
+cd ~/Tesi_Davide_Augmentation || exit 1
 
 # Download dataset da Google Drive se non esiste
 GDRIVE_ID="1RqqDESsSLoCS3NsTYUfrMzEVM7cV8RAF"
