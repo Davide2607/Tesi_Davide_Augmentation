@@ -2,38 +2,57 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from PIL import Image
 import os
 
 # Load synthetic data
 data_dir = os.path.expanduser('~/models/WGAN_GP_augmentation')
-synthetic_images = np.load(os.path.join(data_dir, 'synthetic_images.npy'))
-synthetic_labels = np.load(os.path.join(data_dir, 'synthetic_labels.npy'))
+images = np.load(os.path.join(data_dir, 'synthetic_images.npy'))
+labels = np.load(os.path.join(data_dir, 'synthetic_labels.npy'))
 
-print(f"Synthetic images shape: {synthetic_images.shape}")
-print(f"Synthetic labels shape: {synthetic_labels.shape}")
-print(f"Value range: [{synthetic_images.min():.3f}, {synthetic_images.max():.3f}]")
+# Try to load rare_idx mapping to original class ids (optional)
+rare_idx_path = os.path.join(data_dir, 'rare_class_indices.npy')
+rare_idx = np.load(rare_idx_path) if os.path.exists(rare_idx_path) else None
+
+print(f"Synthetic images shape: {images.shape} (dtype={images.dtype})")
+print(f"Synthetic labels shape: {labels.shape} (dtype={labels.dtype})")
+print(f"Value range: [{images.min()}, {images.max()}]")
+
+# Determine label indices
+if labels.ndim == 1:
+    label_idx = labels.astype(int)
+else:
+    label_idx = np.argmax(labels, axis=1)
+
+# Map to original class ids if rare_idx is present
+if rare_idx is not None:
+    orig_label_idx = np.array([rare_idx[i] for i in label_idx])
+else:
+    orig_label_idx = label_idx
+
+# Class names (fallback)
+class_names = ['ANGRY', 'DISGUST', 'FEAR', 'HAPPY', 'NEUTRAL', 'SAD', 'SURPRISE']
 
 # Count per class
-class_names = ['ANGRY', 'DISGUST', 'FEAR', 'HAPPY', 'NEUTRAL', 'SAD', 'SURPRISE']
-labels_idx = np.argmax(synthetic_labels, axis=1)
-print("\nSynthetic images per class:")
-for i, name in enumerate(class_names):
-    count = np.sum(labels_idx == i)
-    print(f"{name:10s}: {count}")
+print("\nSynthetic images per class (original idx):")
+unique, counts = np.unique(orig_label_idx, return_counts=True)
+for cid, cnt in zip(unique, counts):
+    name = class_names[cid] if cid < len(class_names) else f"class_{cid}"
+    print(f"{cid:2d} {name:10s}: {cnt}")
 
 # Save sample grid
-fig, axes = plt.subplots(4, 8, figsize=(16, 8))
-fig.suptitle('Sample Synthetic Images (DISGUST & SURPRISE)', fontsize=16)
+rows, cols = 4, 8
+fig, axes = plt.subplots(rows, cols, figsize=(cols * 2, rows * 2))
+fig.suptitle('Sample Synthetic Images', fontsize=12)
 
 for i, ax in enumerate(axes.flat):
-    if i < len(synthetic_images):
-        img = synthetic_images[i]
-        # Denormalize from [-1, 1] to [0, 255]
-        img = ((img + 1) * 127.5).astype(np.uint8)
+    if i < len(images):
+        img = images[i]
+        if img.dtype != np.uint8:
+            img = np.clip(img, 0, 255).astype(np.uint8)
         ax.imshow(img)
-        class_idx = labels_idx[i]
-        ax.set_title(f"{class_names[class_idx]}", fontsize=8)
+        cid = orig_label_idx[i]
+        name = class_names[cid] if cid < len(class_names) else f"class_{cid}"
+        ax.set_title(name, fontsize=7)
     ax.axis('off')
 
 plt.tight_layout()
