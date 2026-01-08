@@ -82,7 +82,7 @@ def maybe_prepare_dataset(source_dir: Path, dest_zip: Path):
   run([sys.executable, "dataset_tool.py", "--source", str(source_dir), "--dest", str(dest_zip)], cwd=REPO_DIR)
 
 
-def train(data_zip: Path, outdir: Path, gpus: int, kimg: int, resume: Path | None, aug: str, cfg: str):
+def train(data_zip: Path, outdir: Path, gpus: int, kimg: int, resume: Path | None, aug: str, cfg: str, workers: int):
   cmd = [
     sys.executable,
     "train.py",
@@ -92,6 +92,7 @@ def train(data_zip: Path, outdir: Path, gpus: int, kimg: int, resume: Path | Non
     f"--kimg={kimg}",
     f"--aug={aug}",
     f"--cfg={cfg}",
+    f"--workers={workers}",
   ]
   if resume:
     cmd.append(f"--resume={resume}")
@@ -118,6 +119,7 @@ def parse_args():
   p.add_argument("--kimg", type=int, default=300, help="Kimg di training")
   p.add_argument("--aug", type=str, default="ada", help="Augmenter (es. ada)")
   p.add_argument("--cfg", type=str, default="auto", help="Config (auto, stylegan2, etc.)")
+  p.add_argument("--workers", type=int, default=3, help="Numero di worker del dataloader")
   p.add_argument("--resume", type=Path, default=None, help="Checkpoint da cui riprendere (default: ffhq)")
   p.add_argument("--seeds", type=str, default="0-999", help="Intervallo seeds per generate.py")
   p.add_argument("--generate-out", type=Path, default=Path("generated"), help="Cartella output immagini generate")
@@ -139,7 +141,7 @@ def main():
     maybe_prepare_dataset(args.source_dir, args.data_zip)
 
   resume_path = args.resume if args.resume else pretrained_path
-  train(args.data_zip, args.outdir, args.gpus, args.kimg, resume_path, args.aug, args.cfg)
+  train(args.data_zip, args.outdir, args.gpus, args.kimg, resume_path, args.aug, args.cfg, args.workers)
 
   # Trova l'ultimo snapshot se non specificato
   snapshots = sorted((args.outdir).glob("**/network-snapshot-*.pkl"))
