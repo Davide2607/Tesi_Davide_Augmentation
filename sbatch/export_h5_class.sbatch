@@ -7,15 +7,14 @@
 #SBATCH --mem=8G
 #SBATCH -t 02:00:00
 
-# Attiva conda (aggiorna il path se diverso)
-source ~/miniconda3/etc/profile.d/conda.sh
-conda activate fer_augmentation
+# Usa direttamente il Python dell'ambiente (evita problemi di conda.sh mancante)
+PYTHON=/home/dravida/.conda/envs/fer_augmentation/bin/python
 
 # Ensure log directory exists before Slurm writes files
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 
 # Move into the project directory on the cluster
-cd ~/Tesi_Davide_Augmentation || exit 1
+cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 
 # Download dataset da Google Drive se non esiste
 GDRIVE_ID="1RqqDESsSLoCS3NsTYUfrMzEVM7cV8RAF"
