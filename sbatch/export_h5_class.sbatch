@@ -31,7 +31,7 @@ CLASS_IDX=                     # indice classe (se non usi CLASS_NAME)
 OUT_DIR=~/data/DISGUST         # cartella di output PNG
 MAKE_ZIP=1                     # 1 per creare zip, 0 per no
 
-CMD=(python scripts/export_h5_class.py --h5 "$H5" --out-dir "$OUT_DIR")
+CMD=("$PYTHON" scripts/export_h5_class.py --h5 "$H5" --out-dir "$OUT_DIR")
 
 if [[ -n "$CLASS_NAME" ]]; then
   CMD+=(--class-name "$CLASS_NAME")
