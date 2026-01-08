@@ -13,6 +13,14 @@ conda activate fer_augmentation
 
 cd ~/Tesi_Davide || exit 1
 
+# Download dataset da Google Drive se non esiste
+GDRIVE_ID="1RqqDESsSLoCS3NsTYUfrMzEVM7cV8RAF"
+mkdir -p ~/data
+if [[ ! -f ~/data/dataset.h5 ]]; then
+  echo "Scarico dataset da Google Drive..."
+  gdown "https://drive.google.com/uc?id=$GDRIVE_ID" -O ~/data/dataset.h5
+fi
+
 # Parametri da modificare
 H5=~/data/dataset.h5           # path del dataset h5
 CLASS_NAME=DISGUST             # nome classe (oppure lascia vuoto e usa CLASS_IDX)
