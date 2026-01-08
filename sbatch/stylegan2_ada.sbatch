@@ -8,28 +8,26 @@
 #SBATCH --mem=32G
 #SBATCH -t 12:00:00
 
-# Attiva conda (aggiorna il path se diverso)
-source ~/miniconda3/etc/profile.d/conda.sh
-conda activate fer_augmentation
+# Usa l'interprete Python dell'env
+PY=/home/dravida/.conda/envs/fer_augmentation/bin/python
 
 # Cartella progetto
-echo "CD to project"
 cd ~/Tesi_Davide || exit 1
 
-# Parametri
-DATA_ZIP=~/data/DISGUST.zip            # zip del dataset di UNA classe (usa --source-dir se manca)
-SOURCE_DIR=                            # opzionale: es. ~/data/DISGUST per creare lo zip se non esiste
-OUTDIR=~/models/stylegan2_runs         # output training
-SEEDS=0-199                            # intervallo seed per generate
-KIMG=300                               # durata training
-GEN_OUT=~/models/stylegan2_generated   # output immagini generate
-RESUME=                                # opzionale: snapshot .pkl da cui riprendere (default ffhq)
+# Parametri preconfigurati (DISGUST)
+DATA_ZIP=~/data/DISGUST.zip                 # zip del dataset di UNA classe
+SOURCE_DIR=~/data/DISGUST                   # usato se il zip non esiste (png estratti da export_h5_class)
+OUTDIR=~/models/stylegan2_runs_disgust      # output training
+SEEDS=0-999                                 # intervallo seed per generate
+KIMG=600                                    # durata training in kimg
+GEN_OUT=~/models/stylegan2_generated_disgust# output immagini generate
+RESUME=                                     # opzionale: snapshot .pkl da cui riprendere (default ffhq)
 GPUS=1
 AUG=ada
 CFG=auto
 
-# Costruisci comando
-CMD=(python StyleGAN2_ADA_FER.py \
+# Comando
+CMD=($PY StyleGAN2_ADA_FER.py \
   --data-zip "$DATA_ZIP" \
   --outdir "$OUTDIR" \
   --gpus "$GPUS" \
