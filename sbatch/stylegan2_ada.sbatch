@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -p gpu_a40
 #SBATCH -J stylegan2_ada
-#SBATCH -o ~/models/FER-Augmentation/out_err/stylegan2_%j.out
-#SBATCH -e ~/models/FER-Augmentation/out_err/stylegan2_%j.err
+#SBATCH -o /home/dravida/models/FER-Augmentation/out_err/stylegan2_%j.out
+#SBATCH -e /home/dravida/models/FER-Augmentation/out_err/stylegan2_%j.err
 #SBATCH --gres=gpu:1
 #SBATCH -c 6
 #SBATCH --mem=32G
@@ -12,7 +12,8 @@
 PY=/home/dravida/.conda/envs/fer_augmentation/bin/python
 
 # Cartella progetto
-cd ~/Tesi_Davide || exit 1
+mkdir -p /home/dravida/models/FER-Augmentation/out_err
+cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 
 # Parametri preconfigurati (DISGUST)
 DATA_ZIP=~/data/DISGUST.zip                 # zip del dataset di UNA classe
