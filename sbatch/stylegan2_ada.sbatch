@@ -26,6 +26,7 @@ RESUME=                                     # opzionale: snapshot .pkl da cui ri
 GPUS=1
 AUG=ada
 CFG=auto
+WORKERS=2
 
 # Comando
 CMD=($PY StyleGAN2_ADA_FER.py \
@@ -35,6 +36,7 @@ CMD=($PY StyleGAN2_ADA_FER.py \
   --kimg "$KIMG" \
   --aug "$AUG" \
   --cfg "$CFG" \
+  --workers "$WORKERS" \
   --seeds "$SEEDS" \
   --generate-out "$GEN_OUT")
 
