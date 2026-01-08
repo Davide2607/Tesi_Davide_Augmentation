@@ -121,6 +121,7 @@ def parse_args():
   p.add_argument("--cfg", type=str, default="auto", help="Config (auto, stylegan2, etc.)")
   p.add_argument("--workers", type=int, default=3, help="Numero di worker del dataloader")
   p.add_argument("--resume", type=Path, default=None, help="Checkpoint da cui riprendere (default: ffhq)")
+  p.add_argument("--no-resume", action="store_true", help="Non caricare nessun pretrained, parti da zero")
   p.add_argument("--seeds", type=str, default="0-999", help="Intervallo seeds per generate.py")
   p.add_argument("--generate-out", type=Path, default=Path("generated"), help="Cartella output immagini generate")
   return p.parse_args()
@@ -140,7 +141,7 @@ def main():
       raise FileNotFoundError("--data-zip mancante e --source-dir non fornito")
     maybe_prepare_dataset(args.source_dir, args.data_zip)
 
-  resume_path = args.resume.resolve() if args.resume else pretrained_path.resolve()
+  resume_path = None if args.no_resume else (args.resume.resolve() if args.resume else pretrained_path.resolve())
   train(args.data_zip, args.outdir, args.gpus, args.kimg, resume_path, args.aug, args.cfg, args.workers)
 
   # Trova l'ultimo snapshot se non specificato

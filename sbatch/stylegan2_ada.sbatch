@@ -36,6 +36,7 @@ CMD=($PY StyleGAN2_ADA_FER.py \
   --kimg "$KIMG" \
   --aug "$AUG" \
   --cfg "$CFG" \
+  --no-resume \
   --workers "$WORKERS" \
   --seeds "$SEEDS" \
   --generate-out "$GEN_OUT")
