@@ -140,7 +140,7 @@ def main():
       raise FileNotFoundError("--data-zip mancante e --source-dir non fornito")
     maybe_prepare_dataset(args.source_dir, args.data_zip)
 
-  resume_path = args.resume if args.resume else pretrained_path
+  resume_path = args.resume.resolve() if args.resume else pretrained_path.resolve()
   train(args.data_zip, args.outdir, args.gpus, args.kimg, resume_path, args.aug, args.cfg, args.workers)
 
   # Trova l'ultimo snapshot se non specificato
