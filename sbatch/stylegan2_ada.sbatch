@@ -8,12 +8,16 @@
 #SBATCH --mem=32G
 #SBATCH -t 12:00:00
 
-# Usa l'interprete Python dell'env
-PY=/home/dravida/.conda/envs/fer_augmentation/bin/python
+# Usa l'interprete Python dell'env corretto
+PY=/home/dravida/.conda/envs/stylegan2/bin/python
 
 # Cartella progetto
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
+
+# Isola e pulisce la cache delle estensioni Torch per questo job
+export TORCH_EXTENSIONS_DIR=/home/dravida/.cache/torch_extensions/stylegan2
+rm -rf "$TORCH_EXTENSIONS_DIR"
 
 # Parametri preconfigurati (DISGUST)
 DATA_ZIP=~/data/DISGUST.zip                 # zip del dataset di UNA classe
