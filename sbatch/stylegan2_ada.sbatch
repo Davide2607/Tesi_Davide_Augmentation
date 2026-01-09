@@ -9,12 +9,14 @@
 #SBATCH -t 12:00:00
 
 # Usa l'interprete Python dell'env corretto
+module load miniconda3/3.13.25
+source activate stylegan2
+pip install --user ninja
 PY=/home/dravida/.conda/envs/stylegan2/bin/python
 
 # Cartella progetto
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
-# Usa l'interprete Python dell'env corretto
-PY=/home/dravida/.conda/envs/stylegan2/bin/python
+cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 # Isola e pulisce la cache delle estensioni Torch per questo job
 export TORCH_EXTENSIONS_DIR=/home/dravida/.cache/torch_extensions/stylegan2
 rm -rf "$TORCH_EXTENSIONS_DIR"
