@@ -3,6 +3,8 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
+import glob
+from PIL import Image
 
 # Load synthetic data
 data_dir = os.path.expanduser('~/models/WGAN_GP_augmentation')
@@ -59,4 +61,39 @@ plt.tight_layout()
 output_path = os.path.join(data_dir, 'synthetic_samples.png')
 plt.savefig(output_path, dpi=150, bbox_inches='tight')
 print(f"\nSample grid saved to: {output_path}")
+
+# Directory delle immagini generate da StyleGAN2
+stylegan2_dir = os.path.expanduser('~/models/stylegan2_generated_disgust')
+image_paths = sorted(glob.glob(os.path.join(stylegan2_dir, '*.png')))
+
+if not image_paths:
+    print(f"Nessuna immagine trovata in {stylegan2_dir}")
+    exit(1)
+
+print(f"Trovate {len(image_paths)} immagini in {stylegan2_dir}")
+
+# Carica tutte le immagini
+images = [np.array(Image.open(p)) for p in image_paths]
+
+# Parametri griglia
+total = len(images)
+cols = min(8, total)
+rows = (total + cols - 1) // cols
+
+fig, axes = plt.subplots(rows, cols, figsize=(cols * 2, rows * 2))
+fig.suptitle('Tutte le immagini generate StyleGAN2', fontsize=12)
+
+for i, ax in enumerate(axes.flat):
+    if i < total:
+        img = images[i]
+        if img.dtype != np.uint8:
+            img = np.clip(img, 0, 255).astype(np.uint8)
+        ax.imshow(img)
+        ax.set_title(f"img {i}", fontsize=7)
+    ax.axis('off')
+
+plt.tight_layout()
+output_path = os.path.join(stylegan2_dir, 'stylegan2_all_samples.png')
+plt.savefig(output_path, dpi=150, bbox_inches='tight')
+print(f"\nGriglia di anteprima salvata in: {output_path}")
 print("Done!")
