@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 #SBATCH -p gpu_a40
 #SBATCH -J stylegan2_ada
 #SBATCH -o /home/dravida/models/FER-Augmentation/out_err/stylegan2_%j.out
@@ -8,6 +7,8 @@ set -euo pipefail
 #SBATCH -c 6
 #SBATCH --mem=32G
 #SBATCH -t 12:00:00
+
+set -euo pipefail
 
 # Usa l'interprete Python dell'env corretto
 module load miniconda3/3.13.25
