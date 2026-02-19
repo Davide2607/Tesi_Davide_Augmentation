@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 #SBATCH -p gpu_a40
 #SBATCH -J stylegan2_ada
 #SBATCH -o /home/dravida/models/FER-Augmentation/out_err/stylegan2_%j.out
@@ -10,9 +11,10 @@
 
 # Usa l'interprete Python dell'env corretto
 module load miniconda3/3.13.25
-source activate stylegan2
-pip install --user ninja
-PY=/home/dravida/.conda/envs/stylegan2/bin/python
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate stylegan2
+python -m pip install -q ninja
+PY=$(which python)
 
 # Cartella progetto
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
