@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH -c 6
 #SBATCH --mem=32G
-#SBATCH -t 12:00:00
+#SBATCH -t 24:00:00
 
 set -euo pipefail
 
@@ -31,7 +31,7 @@ OUTDIR=~/models/stylegan2_runs_disgust      # output training
 SEEDS=0-6999                                # intervallo seed per generate (7000 immagini)
 KIMG=600                                    # durata training in kimg
 GEN_OUT=~/models/stylegan2_generated_disgust # output immagini generate
-RESUME=                                     # opzionale: snapshot .pkl da cui riprendere (default ffhq)
+RESUME=auto                                 # auto | none | /path/to/network-snapshot-xxxxxx.pkl
 GPUS=1
 AUG=noaug
 CFG=auto
@@ -45,7 +45,6 @@ CMD=($PY StyleGAN2_ADA_FER.py \
   --kimg "$KIMG" \
   --aug "$AUG" \
   --cfg "$CFG" \
-  --no-resume \
   --workers "$WORKERS" \
   --seeds "$SEEDS" \
   --generate-out "$GEN_OUT")
@@ -53,7 +52,15 @@ CMD=($PY StyleGAN2_ADA_FER.py \
 if [[ -n "$SOURCE_DIR" ]]; then
   CMD+=(--source-dir "$SOURCE_DIR")
 fi
-if [[ -n "$RESUME" ]]; then
+
+if [[ "$RESUME" == "none" ]]; then
+  CMD+=(--no-resume)
+elif [[ "$RESUME" == "auto" ]]; then
+  LATEST_SNAPSHOT=$(find "$OUTDIR" -type f -name 'network-snapshot-*.pkl' | sort | tail -n 1 || true)
+  if [[ -n "$LATEST_SNAPSHOT" ]]; then
+    CMD+=(--resume "$LATEST_SNAPSHOT")
+  fi
+elif [[ -n "$RESUME" ]]; then
   CMD+=(--resume "$RESUME")
 fi
 
