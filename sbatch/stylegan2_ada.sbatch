@@ -25,7 +25,7 @@ rm -rf "$TORCH_EXTENSIONS_DIR"
 DATA_ZIP=~/data/DISGUST.zip                 # zip del dataset di UNA classe
 SOURCE_DIR=~/data/DISGUST                   # usato se il zip non esiste (png estratti da export_h5_class)
 OUTDIR=~/models/stylegan2_runs_disgust      # output training
-SEEDS=0-999                                 # intervallo seed per generate
+SEEDS=0-6999                                # intervallo seed per generate (7000 immagini)
 KIMG=600                                    # durata training in kimg
 GEN_OUT=~/models/stylegan2_generated_disgust # output immagini generate
 RESUME=                                     # opzionale: snapshot .pkl da cui riprendere (default ffhq)

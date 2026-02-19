@@ -238,7 +238,7 @@ def main():
                        help='Directory with generated PNG images (e.g., ~/models/stylegan2_generated_disgust)')
     parser.add_argument('--model-path', type=str, required=True,
                        help='Path to trained FER model (.h5 or .keras)')
-    parser.add_argument('--model-name', type=str, default='EfficientNetB1',
+    parser.add_argument('--model-name', type=str, default='ConvNeXt',
                        choices=['EfficientNetB1', 'VGG19', 'PattLite', 'ResNet', 'ConvNeXt', 'InceptionV3'],
                        help='Backbone model name')
     parser.add_argument('--target-class', type=int, required=True,

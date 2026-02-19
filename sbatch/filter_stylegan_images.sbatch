@@ -18,8 +18,8 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 
 # CONFIGURAZIONE - Modifica questi parametri
 INPUT_DIR=~/models/stylegan2_generated_disgust        # cartella con PNG generati
-MODEL_PATH=~/models/best_model_efficientnet.h5        # modello FER allenato
-MODEL_NAME=EfficientNetB1                             # nome backbone
+MODEL_PATH=~/models/best_model_convnext.h5            # modello FER allenato (best senza augmentation)
+MODEL_NAME=ConvNeXt                                   # nome backbone
 TARGET_CLASS=1                                        # 1=DISGUST (0=ANGRY, 1=DISGUST, 2=FEAR, etc.)
 CONFIDENCE_THRESHOLD=0.7                              # soglia minima (0.6-0.8 consigliato)
 OUTPUT_DIR=~/models/STYLE_GAN_augmentation            # output per immagini filtrate
