@@ -24,13 +24,13 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 export TORCH_EXTENSIONS_DIR=/home/dravida/.cache/torch_extensions/stylegan2
 rm -rf "$TORCH_EXTENSIONS_DIR"
 
-# Parametri preconfigurati (DISGUST)
-DATA_ZIP=~/data/DISGUST.zip                 # zip del dataset di UNA classe
-SOURCE_DIR=~/data/DISGUST                   # usato se il zip non esiste (png estratti da export_h5_class)
-OUTDIR=~/models/stylegan2_runs_disgust      # output training
-SEEDS=0-6999                                # intervallo seed per generate (7000 immagini)
+# Parametri preconfigurati (SURPRISE)
+DATA_ZIP=~/data/SURPRISE.zip                # zip del dataset di UNA classe
+SOURCE_DIR=~/data/SURPRISE                  # usato se il zip non esiste (png estratti da export_h5_class)
+OUTDIR=~/models/stylegan2_runs_surprise     # output training
+SEEDS=0-4999                                # intervallo seed per generate (5000 immagini)
 KIMG=600                                    # durata training in kimg
-GEN_OUT=~/models/stylegan2_generated_disgust # output immagini generate
+GEN_OUT=~/models/stylegan2_generated_surprise # output immagini generate
 RESUME=auto                                 # auto | none | /path/to/network-snapshot-xxxxxx.pkl
 GPUS=1
 AUG=noaug

@@ -26,9 +26,9 @@ fi
 
 # Parametri da modificare
 H5=~/data/dataset.h5           # path del dataset h5
-CLASS_NAME=DISGUST             # nome classe (oppure lascia vuoto e usa CLASS_IDX)
+CLASS_NAME=SURPRISE            # nome classe (oppure lascia vuoto e usa CLASS_IDX)
 CLASS_IDX=                     # indice classe (se non usi CLASS_NAME)
-OUT_DIR=~/data/DISGUST         # cartella di output PNG
+OUT_DIR=~/data/SURPRISE        # cartella di output PNG
 MAKE_ZIP=1                     # 1 per creare zip, 0 per no
 
 CMD=("$PYTHON" scripts/export_h5_class.py --h5 "$H5" --out-dir "$OUT_DIR")
