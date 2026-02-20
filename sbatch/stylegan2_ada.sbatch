@@ -25,7 +25,7 @@ export TORCH_EXTENSIONS_DIR=/home/dravida/.cache/torch_extensions/stylegan2
 rm -rf "$TORCH_EXTENSIONS_DIR"
 
 # Parametri preconfigurati (SURPRISE)
-DATA_ZIP=~/data/SURPRISE.zip                # zip del dataset di UNA classe
+DATA_ZIP=~/data/SURPRISE_stylegan2.zip      # zip in formato StyleGAN2 (creato via dataset_tool)
 SOURCE_DIR=~/data/SURPRISE                  # usato se il zip non esiste (png estratti da export_h5_class)
 OUTDIR=~/models/stylegan2_runs_surprise     # output training
 SEEDS=0-4999                                # intervallo seed per generate (5000 immagini)
@@ -56,9 +56,11 @@ fi
 if [[ "$RESUME" == "none" ]]; then
   CMD+=(--no-resume)
 elif [[ "$RESUME" == "auto" ]]; then
-  LATEST_SNAPSHOT=$(find "$OUTDIR" -type f -name 'network-snapshot-*.pkl' | sort | tail -n 1 || true)
-  if [[ -n "$LATEST_SNAPSHOT" ]]; then
-    CMD+=(--resume "$LATEST_SNAPSHOT")
+  if [[ -d "$OUTDIR" ]]; then
+    LATEST_SNAPSHOT=$(find "$OUTDIR" -type f -name 'network-snapshot-*.pkl' | sort | tail -n 1 || true)
+    if [[ -n "$LATEST_SNAPSHOT" ]]; then
+      CMD+=(--resume "$LATEST_SNAPSHOT")
+    fi
   fi
 elif [[ -n "$RESUME" ]]; then
   CMD+=(--resume "$RESUME")
