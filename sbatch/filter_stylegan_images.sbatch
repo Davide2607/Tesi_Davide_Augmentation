@@ -8,10 +8,13 @@
 #SBATCH --mem=16G
 #SBATCH -t 1:00:00
 
+set -euo pipefail
+
 # Load Python environment
 module load miniconda3/3.13.25
-source activate stylegan2  # o il tuo env con tensorflow
-PY=/home/dravida/.conda/envs/stylegan2/bin/python
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate fer_augmentation
+PY=$(which python)
 
 # Directories
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
