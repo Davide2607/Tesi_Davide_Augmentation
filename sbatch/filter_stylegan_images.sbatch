@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p gpu_a40
-#SBATCH -J filter_stylegan
+#SBATCH -J pack_stylegan
 #SBATCH -o /home/dravida/models/FER-Augmentation/out_err/filter_%j.out
 #SBATCH -e /home/dravida/models/FER-Augmentation/out_err/filter_%j.err
 #SBATCH --gres=gpu:1
@@ -21,21 +21,25 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 
 # CONFIGURAZIONE - Modifica questi parametri
 INPUT_DIR=~/models/stylegan2_generated_disgust        # cartella con PNG generati
-MODEL_PATH=~/models/best_model_convnext.h5            # modello FER allenato (best senza augmentation)
-MODEL_NAME=ConvNeXt                                   # nome backbone
 TARGET_CLASS=1                                        # 1=DISGUST (0=ANGRY, 1=DISGUST, 2=FEAR, etc.)
-CONFIDENCE_THRESHOLD=0.7                              # soglia minima (0.6-0.8 consigliato)
-OUTPUT_DIR=~/models/STYLE_GAN_augmentation            # output per immagini filtrate
+OUTPUT_DIR=~/models/STYLE_GAN_augmentation            # output compatibile con MERGE_AUGMENTED_DATA.ipynb
+MAX_IMAGES=5000                                       # usa solo 5000 immagini sintetiche
+RANDOM_SEED=42                                        # campionamento riproducibile
 
-# Esegui filtro
-$PY filter_stylegan_images.py \
+echo "[INFO] Python: $PY"
+"$PY" -V
+echo "[INFO] INPUT_DIR=$INPUT_DIR"
+[[ -d "$INPUT_DIR" ]] || { echo "[ERROR] Input dir not found: $INPUT_DIR"; exit 1; }
+echo "[INFO] PNG count: $(find "$INPUT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l)"
+
+# Pack no-filter (usa tutte le immagini generate)
+$PY pack_stylegan_images.py \
   --input-dir "$INPUT_DIR" \
-  --model-path "$MODEL_PATH" \
-  --model-name "$MODEL_NAME" \
   --target-class "$TARGET_CLASS" \
-  --confidence-threshold "$CONFIDENCE_THRESHOLD" \
+  --max-images "$MAX_IMAGES" \
+  --random-seed "$RANDOM_SEED" \
   --output-dir "$OUTPUT_DIR"
 
-echo "=== Filter complete ===" 
-echo "Filtered images saved to: $OUTPUT_DIR"
+echo "=== Pack complete ===" 
+echo "All generated images saved to: $OUTPUT_DIR"
 echo "Use MERGE_AUGMENTED_DATA.ipynb to merge with original dataset"
