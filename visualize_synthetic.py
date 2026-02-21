@@ -7,7 +7,7 @@ import glob
 from PIL import Image
 
 # Load synthetic data
-data_dir = os.path.expanduser('~/models/WGAN_GP_augmentation')
+data_dir = os.path.expanduser('~/models/STYLE_GAN_augmentation')
 images = np.load(os.path.join(data_dir, 'synthetic_images.npy'))
 labels = np.load(os.path.join(data_dir, 'synthetic_labels.npy'))
 
@@ -63,7 +63,7 @@ plt.savefig(output_path, dpi=150, bbox_inches='tight')
 print(f"\nSample grid saved to: {output_path}")
 
 # Directory delle immagini generate da StyleGAN2
-stylegan2_dir = os.path.expanduser('~/models/stylegan2_generated_disgust')
+stylegan2_dir = os.path.expanduser('~/models/stylegan2_generated_surprise')
 image_paths = sorted(glob.glob(os.path.join(stylegan2_dir, '*.png')))
 
 if not image_paths:
@@ -72,8 +72,10 @@ if not image_paths:
 
 print(f"Trovate {len(image_paths)} immagini in {stylegan2_dir}")
 
-# Carica tutte le immagini
-images = [np.array(Image.open(p)) for p in image_paths]
+# Carica un sottoinsieme per anteprima (evita griglie enormi)
+max_preview = 64
+preview_paths = image_paths[:max_preview]
+images = [np.array(Image.open(p)) for p in preview_paths]
 
 # Parametri griglia
 total = len(images)
@@ -81,7 +83,7 @@ cols = min(8, total)
 rows = (total + cols - 1) // cols
 
 fig, axes = plt.subplots(rows, cols, figsize=(cols * 2, rows * 2))
-fig.suptitle('Tutte le immagini generate StyleGAN2', fontsize=12)
+fig.suptitle(f'Anteprima StyleGAN2 ({total}/{len(image_paths)} immagini)', fontsize=12)
 
 for i, ax in enumerate(axes.flat):
     if i < total:
