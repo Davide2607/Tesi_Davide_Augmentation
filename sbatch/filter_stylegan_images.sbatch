@@ -22,7 +22,7 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 # CONFIGURAZIONE - Modifica questi parametri
 INPUT_DIR=~/models/stylegan2_generated_disgust        # cartella con PNG generati
 TARGET_CLASS=1                                        # 1=DISGUST (0=ANGRY, 1=DISGUST, 2=FEAR, etc.)
-OUTPUT_DIR=~/models/STYLE_GAN_augmentation            # output compatibile con MERGE_AUGMENTED_DATA.ipynb
+OUTPUT_DIR=~/models/STYLE_GAN_augmentation_disgust    # output compatibile con MERGE_AUGMENTED_DATA.ipynb
 MAX_IMAGES=5000                                       # usa solo 5000 immagini sintetiche
 RANDOM_SEED=42                                        # campionamento riproducibile
 
