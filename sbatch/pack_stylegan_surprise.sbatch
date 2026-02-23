@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -p gpu_a40
-#SBATCH -J pack_stylegan_disgust
-#SBATCH -o /home/dravida/models/FER-Augmentation/out_err/filter_%j.out
-#SBATCH -e /home/dravida/models/FER-Augmentation/out_err/filter_%j.err
+#SBATCH -J pack_stylegan_surprise
+#SBATCH -o /home/dravida/models/FER-Augmentation/out_err/pack_surprise_%j.out
+#SBATCH -e /home/dravida/models/FER-Augmentation/out_err/pack_surprise_%j.err
 #SBATCH --gres=gpu:1
 #SBATCH -c 4
 #SBATCH --mem=16G
@@ -20,10 +20,10 @@ PY=$(which python)
 # Directories
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 
-# CONFIGURAZIONE - Modifica questi parametri
-INPUT_DIR=~/models/stylegan2_generated_disgust        # cartella con PNG generati
-TARGET_CLASS=1                                        # 1=DISGUST (0=ANGRY, 1=DISGUST, 2=FEAR, etc.)
-OUTPUT_DIR=~/models/STYLE_GAN_augmentation_disgust    # output compatibile con MERGE_AUGMENTED_DATA.ipynb
+# CONFIG
+INPUT_DIR=~/models/stylegan2_generated_surprise       # cartella con PNG generate SURPRISE
+TARGET_CLASS=6                                        # 6=SURPRISE
+OUTPUT_DIR=~/models/STYLE_GAN_augmentation_surprise   # output .npy separati SURPRISE
 MAX_IMAGES=5000                                       # usa solo 5000 immagini sintetiche
 RANDOM_SEED=42                                        # campionamento riproducibile
 
@@ -33,14 +33,13 @@ echo "[INFO] INPUT_DIR=$INPUT_DIR"
 [[ -d "$INPUT_DIR" ]] || { echo "[ERROR] Input dir not found: $INPUT_DIR"; exit 1; }
 echo "[INFO] PNG count: $(find "$INPUT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l)"
 
-# Pack no-filter (usa tutte le immagini generate)
 $PY pack_stylegan_images.py \
   --input-dir "$INPUT_DIR" \
   --target-class "$TARGET_CLASS" \
   --max-images "$MAX_IMAGES" \
   --random-seed "$RANDOM_SEED" \
+  --file-pattern "seed*.png" \
   --output-dir "$OUTPUT_DIR"
 
-echo "=== Pack complete ===" 
-echo "All generated images saved to: $OUTPUT_DIR"
-echo "Use MERGE_AUGMENTED_DATA.ipynb to merge with original dataset"
+echo "=== Pack complete (SURPRISE) ==="
+echo "Saved to: $OUTPUT_DIR"

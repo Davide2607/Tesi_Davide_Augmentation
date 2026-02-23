@@ -12,6 +12,7 @@ def parse_args():
     parser.add_argument("--target-class", type=int, required=True, help="Global class id (e.g. 1=DISGUST)")
     parser.add_argument("--max-images", type=int, default=0, help="Max number of images to pack (0 = use all)")
     parser.add_argument("--random-seed", type=int, default=42, help="Random seed used when sampling max-images")
+    parser.add_argument("--file-pattern", type=str, default="seed*.png", help="Filename glob to select generated images")
     return parser.parse_args()
 
 
@@ -24,7 +25,9 @@ def main():
     if not input_dir.exists():
         raise FileNotFoundError(f"Input dir not found: {input_dir}")
 
-    image_files = sorted(list(input_dir.glob("*.png")) + list(input_dir.glob("*.jpg")) + list(input_dir.glob("*.jpeg")))
+    image_files = sorted(list(input_dir.glob(args.file_pattern)))
+    if not image_files:
+        image_files = sorted(list(input_dir.glob("*.png")) + list(input_dir.glob("*.jpg")) + list(input_dir.glob("*.jpeg")))
     if not image_files:
         raise FileNotFoundError(f"No images found in {input_dir}")
 
