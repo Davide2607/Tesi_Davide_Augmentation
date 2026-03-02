@@ -4,7 +4,6 @@ import tensorflow as tf
 from neptune_init import init_neptune
 import argparse
 from pattlite_new import build_model_finetuning,build_model_final_layers
-import neptune
 from loading_new import carica_dati
 import tensorflow as tf
 from sklearn.metrics import confusion_matrix

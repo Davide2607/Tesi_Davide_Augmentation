@@ -5,6 +5,40 @@ import argparse
 from scripts.backbone import build_model_final_layers
 from scripts.loading_data import carica_dati
 
+
+def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
+    try:
+        from sklearn.metrics import precision_recall_fscore_support, balanced_accuracy_score
+    except Exception as e:
+        print(f"sklearn non disponibile, salto metriche aggiuntive: {e}")
+        run[f"{model_name}/{stage_name}/test/extra_metrics_error"].log(str(e))
+        return
+
+    y_pred_prob = model.predict(test_generator, verbose=0)
+    y_pred = np.argmax(y_pred_prob, axis=1)
+    y_true = np.concatenate([np.argmax(y_batch, axis=1) for _, y_batch in test_generator], axis=0)
+
+    if len(y_true) != len(y_pred):
+        min_len = min(len(y_true), len(y_pred))
+        y_true = y_true[:min_len]
+        y_pred = y_pred[:min_len]
+
+    precision_macro, recall_macro, f1_macro, _ = precision_recall_fscore_support(
+        y_true, y_pred, average='macro', zero_division=0
+    )
+    precision_weighted, recall_weighted, f1_weighted, _ = precision_recall_fscore_support(
+        y_true, y_pred, average='weighted', zero_division=0
+    )
+    balanced_acc = balanced_accuracy_score(y_true, y_pred)
+
+    run[f"{model_name}/{stage_name}/test/precision_macro"].log(float(precision_macro))
+    run[f"{model_name}/{stage_name}/test/recall_macro"].log(float(recall_macro))
+    run[f"{model_name}/{stage_name}/test/f1_macro"].log(float(f1_macro))
+    run[f"{model_name}/{stage_name}/test/precision_weighted"].log(float(precision_weighted))
+    run[f"{model_name}/{stage_name}/test/recall_weighted"].log(float(recall_weighted))
+    run[f"{model_name}/{stage_name}/test/f1_weighted"].log(float(f1_weighted))
+    run[f"{model_name}/{stage_name}/test/balanced_accuracy"].log(float(balanced_acc))
+
 # Funzione per addestrare il modello
 def addestra_modello(model, train_generator, valid_generator,test_generator, TRAIN_EPOCH, TRAIN_ES_PATIENCE, TRAIN_LR_PATIENCE, ES_LR_MIN_DELTA, TRAIN_MIN_LR, run, model_name):
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_categorical_accuracy', patience=TRAIN_ES_PATIENCE, min_delta=ES_LR_MIN_DELTA, restore_best_weights=True)
@@ -31,6 +65,7 @@ def valuta_modello(model, test_generator, run, model_name):
     test_loss, test_acc = model.evaluate(test_generator)
     run[f"{model_name}/final_layers/test/loss"].append(test_loss)
     run[f"{model_name}/final_layers/test/accuracy"].append(test_acc)
+    log_extra_test_metrics(model, test_generator, run, model_name, 'final_layers')
     return test_loss, test_acc
 
 # Funzione per salvare il modello e la storia dell'addestramento
