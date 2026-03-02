@@ -17,5 +17,6 @@ set -u
 
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
+export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 
-python -m scripts.finetuning --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0001 --l2_reg 0.00200041712955451
+python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0001 --l2_reg 0.00200041712955451
