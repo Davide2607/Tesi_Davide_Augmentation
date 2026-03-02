@@ -1,4 +1,3 @@
-import neptune
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, GlobalAveragePooling2D, Dropout, Dense, SeparableConv2D, BatchNormalization
 from tensorflow.keras.initializers import Constant
