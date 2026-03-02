@@ -40,6 +40,17 @@ def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
     run[f"{model_name}/{stage_name}/test/f1_weighted"].log(float(f1_weighted))
     run[f"{model_name}/{stage_name}/test/balanced_accuracy"].log(float(balanced_acc))
 
+    print(
+        f"[METRICS][{stage_name}] "
+        f"precision_macro={precision_macro:.6f} "
+        f"recall_macro={recall_macro:.6f} "
+        f"f1_macro={f1_macro:.6f} "
+        f"precision_weighted={precision_weighted:.6f} "
+        f"recall_weighted={recall_weighted:.6f} "
+        f"f1_weighted={f1_weighted:.6f} "
+        f"balanced_accuracy={balanced_acc:.6f}"
+    )
+
 # Funzione per addestrare il modello
 def addestra_modello(model, train_generator, valid_generator,test_generator, TRAIN_EPOCH, TRAIN_ES_PATIENCE, TRAIN_LR_PATIENCE, ES_LR_MIN_DELTA, TRAIN_MIN_LR, run, model_name):
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_categorical_accuracy', patience=TRAIN_ES_PATIENCE, min_delta=ES_LR_MIN_DELTA, restore_best_weights=True, mode = 'max')
