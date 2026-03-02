@@ -8,13 +8,14 @@
 #SBATCH --mem=50G
 #SBATCH -t 06:00:00
 
-set -euo pipefail
+set -eo pipefail
 
 module load miniconda3/3.13.25
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate fer_augmentation
+set -u
 
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 
-python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0001 --l2_reg 0.00200041712955451
+python -m scripts.finetuning --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0001 --l2_reg 0.00200041712955451
