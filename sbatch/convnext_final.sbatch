@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH -c 8
 #SBATCH --mem=50G
-#SBATCH -t 07:00:00
+#SBATCH -t 12:00:00
 
 set -eo pipefail
 
