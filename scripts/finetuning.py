@@ -3,7 +3,6 @@ import tensorflow as tf
 from neptune_init import init_neptune
 import argparse
 from scripts.backbone import build_model_finetuning
-import neptune
 from scripts.loading_data import carica_dati
 import os
 
