@@ -3,7 +3,7 @@ import argparse
 from bayes_opt import BayesianOptimization
 from scripts.backbone import build_model_final_layers
 from neptune_init import init_neptune
-from carica_dati_prova import carica_dati
+from scripts.loading_data import carica_dati
 import tensorflow as tf 
 from losses import categorical_focal_loss
 import tensorflow as tf

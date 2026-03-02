@@ -2,12 +2,11 @@ import numpy as np
 from neptune_init import init_neptune
 import argparse
 from scripts.backbone import build_model_final_layers
-from carica_dati_prova import carica_dati
+from scripts.loading_data import carica_dati
 from tensorflow.keras.models import Model
 from losses import categorical_focal_loss
 from sklearn.model_selection import ParameterGrid
 import gc
-import neptune
 from tensorflow.keras.initializers import Constant
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.applications import MobileNet, ResNet50V2, VGG19, EfficientNetB1, InceptionV3, ConvNeXtBase

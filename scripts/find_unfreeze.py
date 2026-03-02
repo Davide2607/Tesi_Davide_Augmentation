@@ -2,15 +2,13 @@ import numpy as np
 import tensorflow as tf
 from neptune_init import init_neptune
 import argparse
-import neptune
-from carica_dati_prova import carica_dati
+from scripts.loading_data import carica_dati
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Layer, GlobalAveragePooling2D, Dropout, Dense, SeparableConv2D, BatchNormalization
 from losses import categorical_focal_loss
 from sklearn.model_selection import ParameterGrid, RandomizedSearchCV
 import gc
 
-import neptune
 import tensorflow as tf
 from tensorflow.keras.layers import Layer, GlobalAveragePooling2D, Dropout, Dense, SeparableConv2D, BatchNormalization
 from tensorflow.keras.initializers import Constant
