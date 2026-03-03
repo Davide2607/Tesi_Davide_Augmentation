@@ -8,8 +8,8 @@
 #SBATCH --mem=51200
 #SBATCH --ntasks-per-node=8
 #SBATCH --gres=gpu:1
-#SBATCH --output=err_log/convnext_final_%j.log
-#SBATCH --error=err_log/convnext_final_%j.err
+#SBATCH --output=/home/dravida/models/FER-Augmentation/out_err/convnext_final_%j.out
+#SBATCH --error=/home/dravida/models/FER-Augmentation/out_err/convnext_final_%j.err
 
 set -eo pipefail
 
@@ -19,7 +19,7 @@ conda activate fer_augmentation
 set -u
 
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
-mkdir -p err_log
+mkdir -p /home/dravida/models/FER-Augmentation/out_err
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 
 python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.3793651429086242 --learning_rate 0.0004809590540741948 --l2_reg 0.00200041712955451
