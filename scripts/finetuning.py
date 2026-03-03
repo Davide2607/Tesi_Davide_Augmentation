@@ -161,7 +161,7 @@ def main():
 
 
     # Logga i parametri di addestramento su Neptune
-    run[f"{model_name}finetuning/parameters"] = {
+    run[f"{model_name}/finetuning/parameters"] = {
         "learning_rate": FT_LR,
         "dropout_rate": FT_DROPOUT,
         "l2_reg": l2_reg,
