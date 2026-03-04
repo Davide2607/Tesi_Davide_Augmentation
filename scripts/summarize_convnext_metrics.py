@@ -3,14 +3,16 @@ import re
 from pathlib import Path
 
 
+FLOAT_RE = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?"
+
 EPOCH_METRICS_RE = re.compile(
-    r"loss:\s*([0-9eE+\-.]+)\s*-\s*categorical_accuracy:\s*([0-9eE+\-.]+)\s*-\s*val_loss:\s*([0-9eE+\-.]+)\s*-\s*val_categorical_accuracy:\s*([0-9eE+\-.]+)"
+    rf"loss:\s*({FLOAT_RE})\s*-\s*categorical_accuracy:\s*({FLOAT_RE})\s*-\s*val_loss:\s*({FLOAT_RE})\s*-\s*val_categorical_accuracy:\s*({FLOAT_RE})"
 )
 EVAL_METRICS_RE = re.compile(
-    r"loss:\s*([0-9eE+\-.]+)\s*-\s*categorical_accuracy:\s*([0-9eE+\-.]+)"
+    rf"loss:\s*({FLOAT_RE})\s*-\s*categorical_accuracy:\s*({FLOAT_RE})"
 )
 EXTRA_METRICS_LINE_RE = re.compile(r"\[METRICS\]\[(?P<stage>[^\]]+)\]\s+(?P<body>.+)$")
-KEY_VALUE_RE = re.compile(r"([a-zA-Z_]+)=([0-9eE+\-.]+)")
+KEY_VALUE_RE = re.compile(rf"([a-zA-Z_]+)=({FLOAT_RE})")
 
 
 def parse_log_file(log_path: Path):
@@ -22,23 +24,29 @@ def parse_log_file(log_path: Path):
         for line in f:
             epoch_match = EPOCH_METRICS_RE.search(line)
             if epoch_match:
-                epoch_rows.append(
-                    {
-                        "train_loss": float(epoch_match.group(1)),
-                        "train_acc": float(epoch_match.group(2)),
-                        "val_loss": float(epoch_match.group(3)),
-                        "val_acc": float(epoch_match.group(4)),
-                    }
-                )
+                try:
+                    epoch_rows.append(
+                        {
+                            "train_loss": float(epoch_match.group(1)),
+                            "train_acc": float(epoch_match.group(2)),
+                            "val_loss": float(epoch_match.group(3)),
+                            "val_acc": float(epoch_match.group(4)),
+                        }
+                    )
+                except ValueError:
+                    pass
 
             eval_match = EVAL_METRICS_RE.search(line)
             if eval_match:
-                eval_rows.append(
-                    {
-                        "loss": float(eval_match.group(1)),
-                        "acc": float(eval_match.group(2)),
-                    }
-                )
+                try:
+                    eval_rows.append(
+                        {
+                            "loss": float(eval_match.group(1)),
+                            "acc": float(eval_match.group(2)),
+                        }
+                    )
+                except ValueError:
+                    pass
 
             extra_match = EXTRA_METRICS_LINE_RE.search(line)
             if extra_match:
