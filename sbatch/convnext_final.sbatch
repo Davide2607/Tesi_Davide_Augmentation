@@ -22,4 +22,18 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 
+echo "[GPU CHECK] nvidia-smi"
+nvidia-smi || { echo "[FATAL] nvidia-smi non disponibile"; exit 1; }
+
+python - <<'PY'
+import sys
+import tensorflow as tf
+
+gpus = tf.config.list_physical_devices('GPU')
+print(f"[GPU CHECK] TensorFlow GPUs: {gpus}")
+if not gpus:
+	print("[FATAL] TensorFlow non vede GPU. Interrompo il job per evitare training su CPU.")
+	sys.exit(1)
+PY
+
 python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.3793651429086242 --learning_rate 0.0004809590540741948 --l2_reg 0.00200041712955451
