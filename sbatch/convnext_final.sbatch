@@ -21,14 +21,30 @@ set -u
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
+export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
+export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
+export TF_FORCE_GPU_ALLOW_GROWTH=true
+export TF_CPP_MIN_LOG_LEVEL=1
 
 echo "[GPU CHECK] nvidia-smi"
 nvidia-smi || { echo "[FATAL] nvidia-smi non disponibile"; exit 1; }
 
 python - <<'PY'
 import sys
+import os
+import ctypes
 import tensorflow as tf
 
+libs_to_test = ["libcudart.so.12", "libcudnn.so.8", "libcublas.so.12"]
+for lib_name in libs_to_test:
+	try:
+		ctypes.CDLL(lib_name)
+		print(f"[GPU CHECK] OK load {lib_name}")
+	except OSError as e:
+		print(f"[GPU CHECK] FAIL load {lib_name}: {e}")
+
+print(f"[GPU CHECK] CONDA_PREFIX={os.environ.get('CONDA_PREFIX')}")
+print(f"[GPU CHECK] LD_LIBRARY_PATH={os.environ.get('LD_LIBRARY_PATH')}")
 gpus = tf.config.list_physical_devices('GPU')
 print(f"[GPU CHECK] TensorFlow GPUs: {gpus}")
 if not gpus:
