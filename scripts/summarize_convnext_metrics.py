@@ -12,7 +12,7 @@ EVAL_METRICS_RE = re.compile(
     rf"loss:\s*({FLOAT_RE})\s*-\s*categorical_accuracy:\s*({FLOAT_RE})"
 )
 EXTRA_METRICS_LINE_RE = re.compile(r"\[METRICS\]\[(?P<stage>[^\]]+)\]\s+(?P<body>.+)$")
-KEY_VALUE_RE = re.compile(rf"([a-zA-Z_]+)=({FLOAT_RE})")
+KEY_VALUE_RE = re.compile(rf"([a-zA-Z0-9_]+)=({FLOAT_RE})")
 
 
 def parse_log_file(log_path: Path):
