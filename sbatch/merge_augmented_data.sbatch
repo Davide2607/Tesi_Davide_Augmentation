@@ -2,7 +2,7 @@
 #SBATCH --job-name=merge_aug_data
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user=s324381@studenti.polito.it
-#SBATCH --partition=normal
+#SBATCH --partition=cpu_skylake
 #SBATCH --time=00:20:00
 #SBATCH --nodes=1
 #SBATCH --mem=8192
