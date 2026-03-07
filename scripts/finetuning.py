@@ -90,6 +90,7 @@ def get_unique_filename(base_path, base_name, extension):
 # Funzione per salvare il modello e la storia dell'addestramento
 def salva_modello(model, run, model_name):
     base_path = 'model/finetuning'
+    os.makedirs(base_path, exist_ok=True)
     
     try:
         # Salva il modello in formato TensorFlow
@@ -101,27 +102,25 @@ def salva_modello(model, run, model_name):
 
     try:
         # Salva il modello in formato HDF5
-        h5_model_path = os.path.join(base_path,f'pretrained_{model_name}_finetuning')
-        model.save(h5_model_path, save_format='h5')
+        h5_model_path = os.path.join(base_path, f'pretrained_{model_name}_finetuning.h5')
+        model.save(h5_model_path)
         print(f"Model saved as {h5_model_path}")
     except Exception as e:
         print(f"An error occurred while saving the model in HDF5 format: {e}")
 
     try:
         # Salva i pesi del modello
-        weights_path = os.path.join(base_path,f'pretrained_{model_name}_finetuning_weights.h5')
-        model.save_weights(weights_path)
-        weights_path = os.path.join(base_path,f'pretrained_{model_name}_finetuning.weights.h5')
+        weights_path = os.path.join(base_path, f'pretrained_{model_name}_finetuning.weights.h5')
         model.save_weights(weights_path)
         print(f"Model weights saved as {weights_path}")
     except Exception as e:
         print(f"An error occurred while saving the model weights: {e}")
 
     try:
-        keras_model_path = os.path.join(base_path,f'pretrained_{model_name}_finetuning')
+        keras_model_path = os.path.join(base_path, f'pretrained_{model_name}_finetuning.keras')
         # Salva il modello in formato Keras
-        model.save(keras_model_path, save_format='keras')
-        print(f"Model saved as pretrained_{model_name}_finetuning.keras")
+        model.save(keras_model_path)
+        print(f"Model saved as {keras_model_path}")
     except Exception as e:
         print(f"An error occurred while saving the model in Keras format: {e}")
 
