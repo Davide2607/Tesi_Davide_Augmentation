@@ -5,8 +5,9 @@
 #SBATCH --partition=gpu_a40
 #SBATCH --time=24:00:00
 #SBATCH --nodes=1
-#SBATCH --mem=51200
-#SBATCH --ntasks-per-node=8
+#SBATCH --mem=20480
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1
 #SBATCH --output=/home/dravida/models/FER-Augmentation/out_err/convnext_ft_%j.out
 #SBATCH --error=/home/dravida/models/FER-Augmentation/out_err/convnext_ft_%j.err
