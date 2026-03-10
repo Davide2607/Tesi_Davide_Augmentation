@@ -21,7 +21,7 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 
 python scripts/merge_augmented_data.py \
-  --orig-path /home/dravida/data/dataset.h5 \
+  --orig-path /home/dravida/data/dataset_original_backup.h5 \
   --synthetic-dir /home/dravida/models/STYLE_GAN_augmentation_disgust \
   --synthetic-dir /home/dravida/models/STYLE_GAN_augmentation_surprise \
   --out-path /home/dravida/data/dataset_augmented.h5 \
