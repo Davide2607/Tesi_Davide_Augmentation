@@ -7,14 +7,6 @@ import h5py
 import numpy as np
 
 
-def _normalize_images(x: np.ndarray) -> np.ndarray:
-    """Return float32 images in [0, 1] if input appears in [0, 255]."""
-    x = x.astype("float32", copy=False)
-    if x.size and np.nanmax(x) > 1.5:
-        x = x / 255.0
-    return x
-
-
 def _load_original_dataset(orig_path: Path):
     with h5py.File(orig_path, "r") as f:
         x_train = np.array(f["X_train"])
@@ -22,13 +14,26 @@ def _load_original_dataset(orig_path: Path):
         x_val = np.array(f["X_val"])
         y_val = np.array(f["y_val"], dtype=np.int32)
         class_names = [c.decode("utf-8") for c in f["class_names"]]
-
-    x_train = _normalize_images(x_train)
-    x_val = _normalize_images(x_val)
     return x_train, y_train, x_val, y_val, class_names
 
 
-def _load_one_synthetic_dir(syn_dir: Path):
+def _align_synthetic_scale(synth_images: np.ndarray, target_max: float, target_dtype) -> np.ndarray:
+    """Align synthetic image scale to match the original dataset scale."""
+    synth_images = synth_images.astype("float32", copy=False)
+    synth_max = float(np.nanmax(synth_images)) if synth_images.size else 0.0
+
+    # If original data is in [0,255] but synthetic is [0,1], rescale synthetic.
+    if target_max > 1.5 and synth_max <= 1.5:
+        synth_images = synth_images * 255.0
+
+    # If original data is in [0,1] but synthetic is [0,255], downscale synthetic.
+    if target_max <= 1.5 and synth_max > 1.5:
+        synth_images = synth_images / 255.0
+
+    return synth_images.astype(target_dtype, copy=False)
+
+
+def _load_one_synthetic_dir(syn_dir: Path, target_max: float, target_dtype):
     images_path = syn_dir / "synthetic_images.npy"
     labels_path = syn_dir / "synthetic_labels.npy"
     rare_idx_path = syn_dir / "rare_class_indices.npy"
@@ -51,7 +56,7 @@ def _load_one_synthetic_dir(syn_dir: Path):
             f"Label {exc} in {labels_path} not present in local label map built from {rare_idx_path}"
         ) from exc
 
-    synth_images = _normalize_images(synth_images)
+    synth_images = _align_synthetic_scale(synth_images, target_max, target_dtype)
 
     print(
         f"[{syn_dir.name}] images={synth_images.shape} labels={synth_labels.shape} "
@@ -70,12 +75,14 @@ def _print_class_distribution(title: str, labels: np.ndarray, class_names):
 
 def merge_augmented_data(orig_path: Path, synthetic_dirs, out_path: Path, seed: int):
     x_train, y_train, x_val, y_val, class_names = _load_original_dataset(orig_path)
+    target_max = float(np.nanmax(x_train)) if x_train.size else 0.0
+    target_dtype = x_train.dtype
 
     all_synth_images = []
     all_synth_labels = []
 
     for syn_dir in synthetic_dirs:
-        images, labels = _load_one_synthetic_dir(Path(syn_dir))
+        images, labels = _load_one_synthetic_dir(Path(syn_dir), target_max, target_dtype)
         all_synth_images.append(images)
         all_synth_labels.append(labels)
 
