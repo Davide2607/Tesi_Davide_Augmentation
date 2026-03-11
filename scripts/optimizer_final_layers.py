@@ -13,13 +13,27 @@ from tensorflow.keras.losses import Loss
 custom_objects = {'loss': categorical_focal_loss()}
 
 # Definisci la funzione per creare e addestrare il modello
-def train_model(learning_rate, dropout_rate, l2_reg,run, train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias, model_name='PattLite'):
+def train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, trial_epochs, model_name='PattLite'):
     
     
     model = build_model_final_layers(learning_rate, dropout_rate, l2_reg, initial_bias, model_name)
     
 
-    history = model.fit(train_generator_focal_smoot, epochs=15 ,verbose=1, validation_data=valid_generator_focal_smoot)
+    callbacks = [
+        tf.keras.callbacks.EarlyStopping(
+            monitor='val_categorical_accuracy',
+            mode='max',
+            patience=3,
+            restore_best_weights=True,
+        )
+    ]
+    history = model.fit(
+        train_generator_focal_smoot,
+        epochs=trial_epochs,
+        verbose=1,
+        validation_data=valid_generator_focal_smoot,
+        callbacks=callbacks,
+    )
 
     # Durante il training
     for _, (train_acc, val_acc, train_loss, val_loss) in enumerate(zip(history.history['categorical_accuracy'], history.history['val_categorical_accuracy'], history.history['loss'], history.history['val_loss'])):
@@ -32,14 +46,14 @@ def train_model(learning_rate, dropout_rate, l2_reg,run, train_generator_focal_s
     return accuracy
 
 
-def optimize_model(train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias ,learning_rate, dropout_rate, l2_reg, model_name, run):
+def optimize_model(train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, learning_rate, dropout_rate, l2_reg, model_name, run, trial_epochs):
 
     # Logga gli iperparametri della prova corrente
     params_final_layers = f"learning rate = {learning_rate}, dropout_rate = {dropout_rate}, l2_reg = {l2_reg}"
     run[f"{model_name}/hyperparameters"].append(params_final_layers)
 
 
-    accuracy = train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias, model_name)
+    accuracy = train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, trial_epochs, model_name)
     
     # Logga la metrica di interesse
     run["accuracy"] = accuracy
@@ -54,6 +68,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Hyperparameter Optimization and Model Training")
     parser.add_argument('--model_name', type=str, default='PattLite', choices=['PattLite', 'MobileNet', 'ResNet', 'EfficientNetB1', 'VGG19', 'InceptionV3','Yolo', 'ConvNeXt'], 
                         help='The model name to train (default: PattLite)')
+    parser.add_argument('--trial_epochs', type=int, default=8, help='Max epochs per BO trial')
+    parser.add_argument('--init_points', type=int, default=4, help='Initial random BO points')
+    parser.add_argument('--n_iter', type=int, default=20, help='BO optimization iterations')
     return parser.parse_args()
     
 def main():
@@ -89,27 +106,39 @@ def main():
     # Funzione per caricare i dati e inizializzare il modello
     # Carica i dati
    
-    train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias = carica_dati()
-    if args.model_name == 'ResNet' or args.model_name == 'PattLite' or args.model_name == ' InceptionV3':
+    train_generator_focal_smoot, valid_generator_focal_smoot, _, initial_bias = carica_dati()
+    if args.model_name in {'ResNet', 'PattLite', 'InceptionV3'}:
         dropout_rate = 0.3
     else:
         dropout_rate = 0.5
 
     optimizer = BayesianOptimization(
-            f=lambda learning_rate, l2_reg: optimize_model(train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias ,learning_rate, dropout_rate, l2_reg, args.model_name, run),
+            f=lambda learning_rate, l2_reg: optimize_model(
+                train_generator_focal_smoot,
+                valid_generator_focal_smoot,
+                initial_bias,
+                learning_rate,
+                dropout_rate,
+                l2_reg,
+                args.model_name,
+                run,
+                args.trial_epochs,
+            ),
             pbounds=pbounds,
             random_state=42,
         )
 
     # Avvia l'ottimizzazione
     optimizer.maximize(
-        init_points=5,
-        n_iter=150,
+        init_points=args.init_points,
+        n_iter=args.n_iter,
     )
 
     best_params = optimizer.max['params']
     for param, value in best_params.items():
         run[f"{args.model_name}/best_params/{param}"] = value
+    run[f"{args.model_name}/best_params/dropout_rate"] = dropout_rate
+    print(f"[BEST][{args.model_name}][final_layers] {best_params}, dropout_rate={dropout_rate}")
 
 if __name__ == "__main__":
     main()
