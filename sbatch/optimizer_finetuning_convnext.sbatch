@@ -36,4 +36,16 @@ if not gpus:
 	sys.exit(1)
 PY
 
+python - <<'PY'
+import importlib.util
+import subprocess
+import sys
+
+if importlib.util.find_spec("bayes_opt") is None:
+	print("[SETUP] Installing bayesian-optimization...")
+	subprocess.check_call([sys.executable, "-m", "pip", "install", "bayesian-optimization"])
+else:
+	print("[SETUP] bayes_opt already available.")
+PY
+
 python scripts/optimizer_finetuning.py --model_name ConvNeXt --learning_rate 0.0004809590540741948 --trial_epochs 8 --init_points 4 --n_iter 20
