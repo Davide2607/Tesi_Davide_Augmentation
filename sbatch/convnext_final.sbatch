@@ -53,4 +53,4 @@ if not gpus:
 	sys.exit(1)
 PY
 
-python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.3793651429086242 --learning_rate 0.0004809590540741948 --l2_reg 0.00200041712955451
+python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0004809590540741948 --l2_reg 0.00200041712955451
