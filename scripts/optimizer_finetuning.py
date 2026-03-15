@@ -1,50 +1,58 @@
 import argparse
+import gc
+
 # Definisci la funzione da ottimizzare
 from bayes_opt import BayesianOptimization
 from scripts.backbone import build_model_finetuning
 from neptune_init import init_neptune
 from scripts.loading_data import carica_dati
-import tensorflow as tf 
-from losses import categorical_focal_loss
 import tensorflow as tf
-from tensorflow.keras.losses import Loss
+from tensorflow.keras import backend as K
 
 
 # Definisci la funzione per creare e addestrare il modello
 def train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, trial_epochs, model_name='PattLite'):
-    
+    model = None
+    history = None
+    try:
+        model = build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, model_name, run)
 
-    model = build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, model_name,run)
-    
-
-    callbacks = [
-        tf.keras.callbacks.EarlyStopping(
-            monitor='val_categorical_accuracy',
-            mode='max',
-            patience=3,
-            restore_best_weights=True,
+        callbacks = [
+            tf.keras.callbacks.EarlyStopping(
+                monitor='val_categorical_accuracy',
+                mode='max',
+                patience=3,
+                restore_best_weights=True,
+            ),
+            tf.keras.callbacks.TerminateOnNaN(),
+        ]
+        history = model.fit(
+            train_generator_focal_smoot,
+            epochs=trial_epochs,
+            verbose=1,
+            validation_data=valid_generator_focal_smoot,
+            callbacks=callbacks,
         )
-    ]
-    history = model.fit(
-        train_generator_focal_smoot,
-        epochs=trial_epochs,
-        verbose=1,
-        validation_data=valid_generator_focal_smoot,
-        callbacks=callbacks,
-    )
 
-    # Durante il training
-    for _, (train_acc, val_acc, train_loss, val_loss) in enumerate(zip(history.history['categorical_accuracy'], history.history['val_categorical_accuracy'], history.history['loss'], history.history['val_loss'])):
-        run[f"{model_name}/finetuning/training/accuracy"].append(train_acc)
-        run[f"{model_name}/finetuning/validation/accuracy"].append(val_acc)
-        run[f"{model_name}/finetuning/training/loss"].append(train_loss)
-        run[f"{model_name}/finetuning/validation/loss"].append(val_loss)
-      
-    # test_loss, test_acc = model.evaluate(test_generator_focal_smoot)
-    # run[f"{model_name}/test/loss"].append(test_loss)
-    # run[f"{model_name}/test/accuracy"].append(test_acc)
-    accuracy = max(history.history['val_categorical_accuracy'])
-    return accuracy
+        # Durante il training
+        for train_acc, val_acc, train_loss, val_loss in zip(
+            history.history['categorical_accuracy'],
+            history.history['val_categorical_accuracy'],
+            history.history['loss'],
+            history.history['val_loss'],
+        ):
+            run[f"{model_name}/finetuning/training/accuracy"].append(train_acc)
+            run[f"{model_name}/finetuning/validation/accuracy"].append(val_acc)
+            run[f"{model_name}/finetuning/training/loss"].append(train_loss)
+            run[f"{model_name}/finetuning/validation/loss"].append(val_loss)
+
+        return float(max(history.history['val_categorical_accuracy']))
+    finally:
+        # Evita accumulo di grafi/pesi tra i trial BO
+        del history
+        del model
+        K.clear_session()
+        gc.collect()
 
 
 def optimize_model(train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, learning_rate, dropout_rate, l2_reg, model_name, run, trial_epochs):
@@ -94,6 +102,9 @@ def main():
     else:
         print("Nessuna GPU trovata, utilizzo della CPU.")
         run['config'].append("Nessuna GPU trovata, utilizzo della CPU.")
+
+    # Riduce warning del layout optimizer e puo abbassare overhead memoria
+    tf.config.optimizer.set_experimental_options({"layout_optimizer": False})
 
     # Aggiungi il parsing degli argomenti da linea di comando
     args = parse_args()

@@ -5,7 +5,7 @@
 #SBATCH -e /home/dravida/models/FER-Augmentation/out_err/convnext_opt_ft_%j.err
 #SBATCH --gres=gpu:1
 #SBATCH -c 8
-#SBATCH --mem=20G
+#SBATCH --mem=40G
 #SBATCH -t 24:00:00
 
 set -eo pipefail
@@ -48,4 +48,4 @@ else:
 	print("[SETUP] bayes_opt already available.")
 PY
 
-python scripts/optimizer_finetuning.py --model_name ConvNeXt --learning_rate 0.0004809590540741948 --trial_epochs 8 --init_points 4 --n_iter 20
+python scripts/optimizer_finetuning.py --model_name ConvNeXt --learning_rate 0.0004809590540741948 --trial_epochs 5 --init_points 2 --n_iter 8
