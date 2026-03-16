@@ -20,6 +20,25 @@ PY=$(which python)
 # Cartella progetto
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
+# Risolvi il path dello script in modo robusto (case-sensitive su Linux)
+SCRIPT_PATH=""
+for CANDIDATE in \
+  "$PWD/StyleGAN2_ADA_FER.py" \
+  "$PWD/stylegan2_ada_fer.py" \
+  "$PWD/scripts/StyleGAN2_ADA_FER.py" \
+  "$PWD/scripts/stylegan2_ada_fer.py"
+do
+  if [[ -f "$CANDIDATE" ]]; then
+    SCRIPT_PATH="$CANDIDATE"
+    break
+  fi
+done
+
+if [[ -z "$SCRIPT_PATH" ]]; then
+  echo "[FATAL] Script StyleGAN2_ADA_FER.py non trovato in $PWD"
+  echo "[FATAL] Verifica che il file esista nel repository sul cluster."
+  exit 1
+fi
 # Isola e pulisce la cache delle estensioni Torch per questo job
 export TORCH_EXTENSIONS_DIR=/home/dravida/.cache/torch_extensions/stylegan2
 rm -rf "$TORCH_EXTENSIONS_DIR"
@@ -38,7 +57,7 @@ CFG=${CFG:-auto}
 WORKERS=${WORKERS:-2}
 
 # Comando
-CMD=($PY StyleGAN2_ADA_FER.py \
+CMD=($PY "$SCRIPT_PATH" \
   --data-zip "$DATA_ZIP" \
   --outdir "$OUTDIR" \
   --gpus "$GPUS" \
