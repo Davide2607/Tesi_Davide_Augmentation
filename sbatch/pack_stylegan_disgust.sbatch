@@ -20,6 +20,22 @@ PY=$(which python)
 # Directories
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 
+SCRIPT_PATH=""
+for CANDIDATE in \
+  "$PWD/pack_stylegan_images.py" \
+  "$PWD/scripts/pack_stylegan_images.py"
+do
+  if [[ -f "$CANDIDATE" ]]; then
+    SCRIPT_PATH="$CANDIDATE"
+    break
+  fi
+done
+
+if [[ -z "$SCRIPT_PATH" ]]; then
+  echo "[ERROR] pack_stylegan_images.py not found in $PWD"
+  exit 1
+fi
+
 # CONFIG
 INPUT_DIR=~/models/stylegan2_generated_disgust        # cartella con PNG generate DISGUST
 TARGET_CLASS=1                                        # 1=DISGUST
@@ -33,7 +49,7 @@ echo "[INFO] INPUT_DIR=$INPUT_DIR"
 [[ -d "$INPUT_DIR" ]] || { echo "[ERROR] Input dir not found: $INPUT_DIR"; exit 1; }
 echo "[INFO] PNG count: $(find "$INPUT_DIR" -maxdepth 1 -type f -name '*.png' | wc -l)"
 
-$PY pack_stylegan_images.py \
+$PY "$SCRIPT_PATH" \
   --input-dir "$INPUT_DIR" \
   --target-class "$TARGET_CLASS" \
   --max-images "$MAX_IMAGES" \
