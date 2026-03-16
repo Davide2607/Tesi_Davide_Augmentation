@@ -25,17 +25,17 @@ export TORCH_EXTENSIONS_DIR=/home/dravida/.cache/torch_extensions/stylegan2
 rm -rf "$TORCH_EXTENSIONS_DIR"
 
 # Parametri preconfigurati (SURPRISE)
-DATA_ZIP=~/data/SURPRISE_stylegan2.zip      # zip in formato StyleGAN2 (creato via dataset_tool)
-SOURCE_DIR=~/data/SURPRISE                  # usato se il zip non esiste (png estratti da export_h5_class)
-OUTDIR=~/models/stylegan2_runs_surprise     # output training
-SEEDS=0-4999                                # intervallo seed per generate (5000 immagini)
-KIMG=600                                    # durata training in kimg
-GEN_OUT=~/models/stylegan2_generated_surprise # output immagini generate
-RESUME=none                                 # auto | none | /path/to/network-snapshot-xxxxxx.pkl
-GPUS=1
-AUG=noaug
-CFG=auto
-WORKERS=2
+DATA_ZIP=${DATA_ZIP:-~/data/SURPRISE_stylegan2.zip}            # override per classe/dataset
+SOURCE_DIR=${SOURCE_DIR:-~/data/SURPRISE}                      # override opzionale
+OUTDIR=${OUTDIR:-~/models/stylegan2_runs_surprise}             # output training
+SEEDS=${SEEDS:-0-4999}                                          # es. 5000-9999 per secondo batch
+KIMG=${KIMG:-600}                                               # es. 0/1 se vuoi solo generate
+GEN_OUT=${GEN_OUT:-~/models/stylegan2_generated_surprise}       # output immagini generate
+RESUME=${RESUME:-none}                                          # auto | none | /path/to/network-snapshot-xxxxxx.pkl
+GPUS=${GPUS:-1}
+AUG=${AUG:-noaug}
+CFG=${CFG:-auto}
+WORKERS=${WORKERS:-2}
 
 # Comando
 CMD=($PY StyleGAN2_ADA_FER.py \

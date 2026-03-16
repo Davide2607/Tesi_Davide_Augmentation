@@ -24,8 +24,8 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 INPUT_DIR=~/models/stylegan2_generated_disgust        # cartella con PNG generate DISGUST
 TARGET_CLASS=1                                        # 1=DISGUST
 OUTPUT_DIR=~/models/STYLE_GAN_augmentation_disgust    # output .npy separati DISGUST
-MAX_IMAGES=5000                                       # usa solo 5000 immagini sintetiche
-RANDOM_SEED=42                                        # campionamento riproducibile
+MAX_IMAGES=${MAX_IMAGES:-5000}                        # override: MAX_IMAGES=10000 sbatch ...
+RANDOM_SEED=${RANDOM_SEED:-42}                        # override: RANDOM_SEED=123 sbatch ...
 
 echo "[INFO] Python: $PY"
 "$PY" -V
