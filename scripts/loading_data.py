@@ -24,7 +24,7 @@ def loading_data():
                 return x, y, class_names
 
     file_path = os.path.expanduser('~/data') # path del dataset (uses HOME)
-    train_path = os.path.join( file_path, 'dataset.h5')
+    train_path = os.environ.get('DATASET_H5', os.path.join(file_path, 'dataset.h5'))
     test_path = os.path.join(file_path, 'test_data_adele.h5')
 
     X_train, y_train, X_val, y_val, class_names = load_data_and_labels(train_path, 'train')

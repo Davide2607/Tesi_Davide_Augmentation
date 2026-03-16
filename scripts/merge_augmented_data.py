@@ -33,7 +33,7 @@ def _align_synthetic_scale(synth_images: np.ndarray, target_max: float, target_d
     return synth_images.astype(target_dtype, copy=False)
 
 
-def _load_one_synthetic_dir(syn_dir: Path, target_max: float, target_dtype):
+def _load_one_synthetic_dir(syn_dir: Path, target_max: float, target_dtype, max_per_dir=None, rng=None):
     images_path = syn_dir / "synthetic_images.npy"
     labels_path = syn_dir / "synthetic_labels.npy"
     rare_idx_path = syn_dir / "rare_class_indices.npy"
@@ -56,6 +56,13 @@ def _load_one_synthetic_dir(syn_dir: Path, target_max: float, target_dtype):
             f"Label {exc} in {labels_path} not present in local label map built from {rare_idx_path}"
         ) from exc
 
+    if max_per_dir is not None and max_per_dir > 0 and len(synth_labels_global) > max_per_dir:
+        if rng is None:
+            rng = np.random.default_rng(42)
+        subset_idx = rng.choice(len(synth_labels_global), size=max_per_dir, replace=False)
+        synth_images = synth_images[subset_idx]
+        synth_labels_global = synth_labels_global[subset_idx]
+
     synth_images = _align_synthetic_scale(synth_images, target_max, target_dtype)
 
     print(
@@ -73,7 +80,7 @@ def _print_class_distribution(title: str, labels: np.ndarray, class_names):
         print(f"  {name:12s}: {counter.get(idx, 0)}")
 
 
-def merge_augmented_data(orig_path: Path, synthetic_dirs, out_path: Path, seed: int):
+def merge_augmented_data(orig_path: Path, synthetic_dirs, out_path: Path, seed: int, max_per_dir=None):
     x_train, y_train, x_val, y_val, class_names = _load_original_dataset(orig_path)
     target_max = float(np.nanmax(x_train)) if x_train.size else 0.0
     target_dtype = x_train.dtype
@@ -81,8 +88,15 @@ def merge_augmented_data(orig_path: Path, synthetic_dirs, out_path: Path, seed: 
     all_synth_images = []
     all_synth_labels = []
 
+    dir_rng = np.random.default_rng(seed)
     for syn_dir in synthetic_dirs:
-        images, labels = _load_one_synthetic_dir(Path(syn_dir), target_max, target_dtype)
+        images, labels = _load_one_synthetic_dir(
+            Path(syn_dir),
+            target_max,
+            target_dtype,
+            max_per_dir=max_per_dir,
+            rng=dir_rng,
+        )
         all_synth_images.append(images)
         all_synth_labels.append(labels)
 
@@ -142,13 +156,19 @@ def parse_args():
         default=Path(os.path.expanduser("~/data/dataset_augmented.h5")),
         help="Output path for merged dataset",
     )
+    parser.add_argument(
+        "--max-per-dir",
+        type=int,
+        default=None,
+        help="Max synthetic samples to use from each --synthetic-dir (e.g. 5000 means 5000 per dir)",
+    )
     parser.add_argument("--seed", type=int, default=42, help="Shuffle seed")
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    merge_augmented_data(args.orig_path, args.synthetic_dir, args.out_path, args.seed)
+    merge_augmented_data(args.orig_path, args.synthetic_dir, args.out_path, args.seed, args.max_per_dir)
 
 
 if __name__ == "__main__":

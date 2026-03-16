@@ -20,9 +20,19 @@ set -u
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 
+MAX_PER_DIR=${MAX_PER_DIR:-0}
+OUT_PATH=${OUT_PATH:-/home/dravida/data/dataset_augmented.h5}
+SEED=${SEED:-42}
+
+EXTRA_ARGS=()
+if [ "$MAX_PER_DIR" -gt 0 ]; then
+  EXTRA_ARGS+=(--max-per-dir "$MAX_PER_DIR")
+fi
+
 python scripts/merge_augmented_data.py \
   --orig-path /home/dravida/data/dataset_original_backup.h5 \
   --synthetic-dir /home/dravida/models/STYLE_GAN_augmentation_disgust \
   --synthetic-dir /home/dravida/models/STYLE_GAN_augmentation_surprise \
-  --out-path /home/dravida/data/dataset_augmented.h5 \
-  --seed 42
+  --out-path "$OUT_PATH" \
+  --seed "$SEED" \
+  "${EXTRA_ARGS[@]}"
