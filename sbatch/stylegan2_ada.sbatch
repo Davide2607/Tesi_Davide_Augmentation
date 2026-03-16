@@ -25,6 +25,8 @@ SCRIPT_PATH=""
 for CANDIDATE in \
   "$PWD/StyleGAN2_ADA_FER.py" \
   "$PWD/stylegan2_ada_fer.py" \
+  "$PWD/neaural_networks/StyleGAN2_ADA_FER.py" \
+  "$PWD/neaural_networks/stylegan2_ada_fer.py" \
   "$PWD/scripts/StyleGAN2_ADA_FER.py" \
   "$PWD/scripts/stylegan2_ada_fer.py"
 do
