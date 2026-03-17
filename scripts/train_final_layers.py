@@ -2,8 +2,17 @@ import numpy as np
 import tensorflow as tf
 from neptune_init import init_neptune
 import argparse
+import random
+import os
 from scripts.backbone import build_model_final_layers
 from scripts.loading_data import carica_dati
+
+
+def set_global_seed(seed: int):
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.keras.utils.set_random_seed(seed)
 
 
 def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
@@ -30,6 +39,14 @@ def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
         y_true, y_pred, average='weighted', zero_division=0
     )
     balanced_acc = balanced_accuracy_score(y_true, y_pred)
+    _, recall_per_class, _, _ = precision_recall_fscore_support(
+        y_true,
+        y_pred,
+        labels=np.arange(y_pred_prob.shape[1]),
+        average=None,
+        zero_division=0,
+    )
+    worst_class_idx = int(np.argmin(recall_per_class))
 
     run[f"{model_name}/{stage_name}/test/precision_macro"].log(float(precision_macro))
     run[f"{model_name}/{stage_name}/test/recall_macro"].log(float(recall_macro))
@@ -48,6 +65,15 @@ def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
         f"recall_weighted={recall_weighted:.6f} "
         f"f1_weighted={f1_weighted:.6f} "
         f"balanced_accuracy={balanced_acc:.6f}"
+    )
+    per_class_recall_str = " ".join(
+        [f"class_{i}={v:.6f}" for i, v in enumerate(recall_per_class)]
+    )
+    print(
+        f"[METRICS][{stage_name}][per_class_recall] "
+        f"{per_class_recall_str} "
+        f"worst_class=class_{worst_class_idx} "
+        f"worst_recall={recall_per_class[worst_class_idx]:.6f}"
     )
 
 # Funzione per addestrare il modello
@@ -128,6 +154,7 @@ def main():
     parser.add_argument('--dropout_rate', type=float, required=True, help='Dropout rate')
     parser.add_argument('--TRAIN_EPOCH', type=int, required=True, help='Training epochs')
     parser.add_argument('--model_name', type=str, required=True, help='Model name. Default is PattLite', default='PattLite')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed')
     args = parser.parse_args()
 
     # Recupera i parametri dalla linea di comando
@@ -136,6 +163,9 @@ def main():
     TRAIN_DROPOUT = args.dropout_rate
     TRAIN_EPOCH = args.TRAIN_EPOCH
     model_name = args.model_name
+    seed = args.seed
+
+    set_global_seed(seed)
 
     # Carica i dati
     train_generator, valid_generator, test_generator, initial_bias = carica_dati()
@@ -150,7 +180,8 @@ def main():
         "dropout_rate": TRAIN_DROPOUT,
         "l2_reg": l2_reg,
         "epochs": TRAIN_EPOCH,
-        "batch_size": 64
+        "batch_size": 64,
+        "seed": seed,
     }
 
     # Addestra il modello

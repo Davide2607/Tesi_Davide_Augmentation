@@ -21,6 +21,8 @@ set -u
 
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
+export DATASET_H5="${DATASET_H5:-/home/dravida/data/dataset_augmented.h5}"
+SEED="${SEED:-42}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
@@ -53,4 +55,4 @@ if not gpus:
 	sys.exit(1)
 PY
 
-python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0004486408164347765 --l2_reg 0.06000440657001408
+python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0004486408164347765 --l2_reg 0.06000440657001408 --seed "$SEED"
