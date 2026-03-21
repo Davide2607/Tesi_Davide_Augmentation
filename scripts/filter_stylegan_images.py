@@ -20,6 +20,7 @@ from tensorflow.keras.applications import EfficientNetB1, VGG19, MobileNet, ResN
 from tensorflow.keras.models import Model
 from PIL import Image
 import argparse
+import traceback
 
 # Custom layers per compatibilità modello
 class ExpandDimsLayer(Layer):
@@ -117,6 +118,8 @@ def load_fer_model(model_path, model_name='EfficientNetB1'):
         return model
     except Exception as e:
         print(f"Error loading model: {e}")
+        print("Full traceback:")
+        traceback.print_exc()
         print("Building model from scratch (requires initial_bias)")
         initial_bias = np.zeros(7)  # fallback
         model = build_model_final_layers(0.001, 0.1, 0.1, initial_bias, model_name)
@@ -256,7 +259,12 @@ def main():
     print(f"Target class: {args.target_class}")
     print(f"Confidence threshold: {args.confidence_threshold}")
     print(f"Output dir: {args.output_dir}")
-    
+    print(f"TensorFlow version: {tf.__version__}")
+    try:
+     import keras
+     print(f"Keras version: {keras.__version__}")
+    except ImportError:
+     print("Keras (standalone) not found, using tf.keras only.")
     # Load FER model
     model = load_fer_model(args.model_path, args.model_name)
     
