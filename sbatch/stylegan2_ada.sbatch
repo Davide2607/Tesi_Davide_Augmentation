@@ -30,7 +30,7 @@ for CANDIDATE in \
   "$PWD/scripts/StyleGAN2_ADA_FER.py" \
   "$PWD/scripts/stylegan2_ada_fer.py"
 do
-  if [[ -f "$CANDIDATE" ]]; then
+  if [[ -f  pwd "$CANDIDATE" ]]; then
     SCRIPT_PATH="$CANDIDATE"
     break
   fi
