@@ -26,9 +26,9 @@ fi
 
 # Parametri da modificare
 H5=~/data/dataset.h5           # path del dataset h5
-CLASS_NAME=SURPRISE            # nome classe (oppure lascia vuoto e usa CLASS_IDX)
+CLASS_NAME=FEAR                # nome classe (oppure lascia vuoto e usa CLASS_IDX)
 CLASS_IDX=                     # indice classe (se non usi CLASS_NAME)
-OUT_DIR=~/data/SURPRISE        # cartella di output PNG
+OUT_DIR=~/data/FEAR_stylegan2  # cartella di output PNG
 MAKE_ZIP=1                     # 1 per creare zip, 0 per no
 
 CMD=("$PYTHON" scripts/export_h5_class.py --h5 "$H5" --out-dir "$OUT_DIR")
@@ -48,3 +48,12 @@ fi
 
 set -x
 "${CMD[@]}"
+# Rinomina lo zip in FEAR_stylegan2.zip se creato
+if [[ "$MAKE_ZIP" == "1" ]]; then
+  ZIP_PATH="${OUT_DIR}.zip"
+  DEST_ZIP="/home/dravida/Tesi_Davide_Augmentation/data/FEAR_stylegan2.zip"
+  if [[ -f "$ZIP_PATH" ]]; then
+    mv "$ZIP_PATH" "$DEST_ZIP"
+    echo "Zip FEAR_stylegan2.zip creato in $DEST_ZIP"
+  fi
+fi
