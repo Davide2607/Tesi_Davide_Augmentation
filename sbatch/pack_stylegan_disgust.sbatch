@@ -37,10 +37,10 @@ if [[ -z "$SCRIPT_PATH" ]]; then
 fi
 
 # CONFIG
-INPUT_DIR=~/models/stylegan2_generated_disgust        # cartella con PNG generate DISGUST
-TARGET_CLASS=1                                        # 1=DISGUST
-OUTPUT_DIR=~/models/STYLE_GAN_augmentation_disgust    # output .npy separati DISGUST
-MAX_IMAGES=${MAX_IMAGES:-5000}                        # override: MAX_IMAGES=10000 sbatch ...
+INPUT_DIR=~/models/stylegan2_generated_fear        # cartella con PNG generate FEAR
+TARGET_CLASS=2                                        # 2=FEAR
+OUTPUT_DIR=~/models/STYLE_GAN_augmentation_fear    # output .npy separati FEAR
+MAX_IMAGES=${MAX_IMAGES:-3000}                        # override: MAX_IMAGES=10000 sbatch ...
 RANDOM_SEED=${RANDOM_SEED:-42}                        # override: RANDOM_SEED=123 sbatch ...
 
 echo "[INFO] Python: $PY"
@@ -57,5 +57,5 @@ $PY "$SCRIPT_PATH" \
   --file-pattern "seed*.png" \
   --output-dir "$OUTPUT_DIR"
 
-echo "=== Pack complete (DISGUST) ==="
+echo "=== Pack complete (FEAR) ==="
 echo "Saved to: $OUTPUT_DIR"
