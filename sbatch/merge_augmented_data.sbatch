@@ -33,6 +33,7 @@ python scripts/merge_augmented_data.py \
   --orig-path /home/dravida/data/dataset_original_backup.h5 \
   --synthetic-dir /home/dravida/models/STYLE_GAN_augmentation_disgust \
   --synthetic-dir /home/dravida/models/STYLE_GAN_augmentation_surprise \
+  --synthetic-dir /home/dravida/models/stylegan2_generated_fear \
   --out-path "$OUT_PATH" \
   --seed "$SEED" \
   "${EXTRA_ARGS[@]}"
