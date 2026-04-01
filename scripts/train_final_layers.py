@@ -81,8 +81,20 @@ def addestra_modello(model, train_generator, valid_generator,test_generator, TRA
     early_stopping_callback = tf.keras.callbacks.EarlyStopping(monitor='val_categorical_accuracy', patience=TRAIN_ES_PATIENCE, min_delta=ES_LR_MIN_DELTA, restore_best_weights=True)
     learning_rate_callback = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_categorical_accuracy', patience=TRAIN_LR_PATIENCE, verbose=0, min_delta=ES_LR_MIN_DELTA, min_lr=TRAIN_MIN_LR)
 
-    history = model.fit(train_generator, epochs=TRAIN_EPOCH, validation_data=valid_generator, verbose=1,
-                        callbacks=[early_stopping_callback, learning_rate_callback])
+    fit_workers = int(os.environ.get('FIT_WORKERS', '4'))
+    fit_multiprocessing = os.environ.get('FIT_MULTIPROCESSING', '1') == '1'
+    fit_max_queue_size = int(os.environ.get('FIT_MAX_QUEUE_SIZE', '16'))
+
+    history = model.fit(
+        train_generator,
+        epochs=TRAIN_EPOCH,
+        validation_data=valid_generator,
+        verbose=1,
+        callbacks=[early_stopping_callback, learning_rate_callback],
+        workers=fit_workers,
+        use_multiprocessing=fit_multiprocessing,
+        max_queue_size=fit_max_queue_size,
+    )
     
     test_loss, test_acc = model.evaluate(test_generator)
      # Loggare l'accuratezza del training e della validazione su Neptune
@@ -185,7 +197,7 @@ def main():
     }
 
     # Addestra il modello
-    history = addestra_modello(model, train_generator, valid_generator, test_generator, TRAIN_EPOCH, 50, 15, 0.003, 1e-6, run, model_name)
+    history = addestra_modello(model, train_generator, valid_generator, test_generator, TRAIN_EPOCH, 10, 5, 0.003, 1e-6, run, model_name)
 
     # Valuta il modello
     _, _ = valuta_modello(model, test_generator, run, model_name)

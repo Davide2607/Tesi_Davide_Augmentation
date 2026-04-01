@@ -22,6 +22,10 @@ set -u
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_zero.h5}"
+export BATCH_SIZE="${BATCH_SIZE:-16}"
+export FIT_WORKERS="${FIT_WORKERS:-4}"
+export FIT_MULTIPROCESSING="${FIT_MULTIPROCESSING:-1}"
+export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
 SEED="${SEED:-42}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"

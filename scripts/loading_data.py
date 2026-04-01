@@ -44,6 +44,7 @@ def loading_data():
 # Funzione per creare i generatori di dati
 def carica_dati():
     X_train, y_train, X_val, y_val, X_test, y_test, _, initial_bias = loading_data()
+    batch_size = int(os.environ.get('BATCH_SIZE', '16'))
     augmentations = {
         'rotation_range': 10,
         'width_shift_range': 0.2,
@@ -57,9 +58,9 @@ def carica_dati():
     y_train_one_hot = to_categorical(y_train, num_classes=NUM_CLASSES)
     y_val_one_hot = to_categorical(y_val, num_classes=NUM_CLASSES)
     y_test_one_hot = to_categorical(y_test, num_classes=NUM_CLASSES)
-    train_generator_focal_smoot = CustomBalancedDataGenerator(X_train, y_train_one_hot, batch_size=16, augmentations=augmentations, data_inf='train', label_smoothing=0.05)
-    valid_generator_focal_smoot = CustomBalancedDataGenerator(X_val, y_val_one_hot, batch_size=16, augmentations=augmentations, data_inf='valid', label_smoothing=0)
-    test_generator_focal_smoot = CustomBalancedDataGenerator(X_test, y_test_one_hot, batch_size=16, augmentations=test_augmentations, data_inf='test', label_smoothing=0)
+    train_generator_focal_smoot = CustomBalancedDataGenerator(X_train, y_train_one_hot, batch_size=batch_size, augmentations=augmentations, data_inf='train', label_smoothing=0.05)
+    valid_generator_focal_smoot = CustomBalancedDataGenerator(X_val, y_val_one_hot, batch_size=batch_size, augmentations=augmentations, data_inf='valid', label_smoothing=0)
+    test_generator_focal_smoot = CustomBalancedDataGenerator(X_test, y_test_one_hot, batch_size=batch_size, augmentations=test_augmentations, data_inf='test', label_smoothing=0)
     
     return train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias
 
