@@ -192,7 +192,7 @@ def main():
         "dropout_rate": TRAIN_DROPOUT,
         "l2_reg": l2_reg,
         "epochs": TRAIN_EPOCH,
-        "batch_size": 64,
+        "batch_size": getattr(train_generator, 'batch_size', None),
         "seed": seed,
     }
 
