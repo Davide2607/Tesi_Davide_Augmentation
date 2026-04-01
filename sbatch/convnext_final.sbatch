@@ -3,7 +3,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=s324381@studenti.polito.it
 #SBATCH --partition=gpu_a40
-#SBATCH --time=24:00:00
+#SBATCH --time=12:00:00
 #SBATCH --nodes=1
 #SBATCH --mem=20480
 #SBATCH --ntasks-per-node=1
