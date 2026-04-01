@@ -57,9 +57,9 @@ def carica_dati():
     y_train_one_hot = to_categorical(y_train, num_classes=NUM_CLASSES)
     y_val_one_hot = to_categorical(y_val, num_classes=NUM_CLASSES)
     y_test_one_hot = to_categorical(y_test, num_classes=NUM_CLASSES)
-    train_generator_focal_smoot = CustomBalancedDataGenerator(X_train, y_train_one_hot, batch_size=64, augmentations=augmentations, data_inf='train', label_smoothing=0.05)
-    valid_generator_focal_smoot = CustomBalancedDataGenerator(X_val, y_val_one_hot, batch_size=64, augmentations=augmentations, data_inf='valid', label_smoothing=0)
-    test_generator_focal_smoot = CustomBalancedDataGenerator(X_test, y_test_one_hot, batch_size=64, augmentations=test_augmentations, data_inf='test', label_smoothing=0)
+    train_generator_focal_smoot = CustomBalancedDataGenerator(X_train, y_train_one_hot, batch_size=16, augmentations=augmentations, data_inf='train', label_smoothing=0.05)
+    valid_generator_focal_smoot = CustomBalancedDataGenerator(X_val, y_val_one_hot, batch_size=16, augmentations=augmentations, data_inf='valid', label_smoothing=0)
+    test_generator_focal_smoot = CustomBalancedDataGenerator(X_test, y_test_one_hot, batch_size=16, augmentations=test_augmentations, data_inf='test', label_smoothing=0)
     
     return train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias
 
