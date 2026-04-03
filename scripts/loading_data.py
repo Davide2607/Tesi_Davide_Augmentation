@@ -8,6 +8,15 @@ from tensorflow.keras.utils import to_categorical
 import cv2
 
 def loading_data():
+    def _normalize_class_name(name: str) -> str:
+        name = name.strip()
+        if name.startswith('synthetic_'):
+            name = name[len('synthetic_'):]
+        # Common typo observed in some generated datasets
+        if name == 'EAR':
+            name = 'FEAR'
+        return name
+
     def load_data_and_labels(file_path, info):
         class_names = None
         with h5py.File(file_path, 'r') as f:
@@ -16,11 +25,13 @@ def loading_data():
                 y_train = np.array(f['y_train'])
                 X_val = np.array(f['X_val'])
                 y_val = np.array(f['y_val'])
-                class_names = [name.decode('utf-8') for name in f['class_names']]
+                class_names = [_normalize_class_name(name.decode('utf-8')) for name in f['class_names']]
                 return X_train, y_train, X_val, y_val, class_names
             else:
                 x = np.array(f['X_test'])
                 y = np.array(f['y_test'])
+                if 'class_names' in f:
+                    class_names = [_normalize_class_name(name.decode('utf-8')) for name in f['class_names']]
                 return x, y, class_names
 
     file_path = os.path.expanduser('~/data') # path del dataset (uses HOME)
@@ -28,7 +39,31 @@ def loading_data():
     test_path = os.path.join(file_path, 'test_data_adele.h5')
 
     X_train, y_train, X_val, y_val, class_names = load_data_and_labels(train_path, 'train')
-    X_test, y_test, _ = load_data_and_labels(test_path, 'test')
+    X_test, y_test, test_class_names = load_data_and_labels(test_path, 'test')
+
+    # If test label IDs follow a different class order than the training set,
+    # remap y_test so that metrics are computed correctly.
+    if test_class_names is not None and class_names is not None and test_class_names != class_names:
+        train_index_by_name = {name: idx for idx, name in enumerate(class_names)}
+        remap = {}
+        missing = []
+        for test_idx, name in enumerate(test_class_names):
+            if name in train_index_by_name:
+                remap[test_idx] = train_index_by_name[name]
+            else:
+                missing.append(name)
+
+        if missing:
+            raise ValueError(
+                "class_names mismatch between train and test and some test classes are missing in train: "
+                + ", ".join(missing)
+            )
+
+        print(
+            "[WARN] class_names order differs between train and test. "
+            "Remapping y_test to match training class order."
+        )
+        y_test = np.vectorize(remap.get)(y_test)
 
     class_counts = np.bincount(y_train)
     total_samples = len(y_train)
