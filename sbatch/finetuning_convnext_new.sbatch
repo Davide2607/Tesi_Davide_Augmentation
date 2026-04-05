@@ -59,4 +59,4 @@ if not gpus:
 	sys.exit(1)
 PY
 
-python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.2149693411886179 --learning_rate 0.00022412680060634408 --l2_reg 0.007413809573706404 --seed "$SEED"
+python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.1624074561769746 --learning_rate 0.000288331559788701 --l2_reg 0.016443457513284063 --seed "$SEED"
