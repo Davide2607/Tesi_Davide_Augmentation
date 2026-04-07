@@ -1,8 +1,16 @@
 # Funzione per caricare i dati
 import os
+import sys
 import numpy as np
 import h5py
 from sklearn.utils import shuffle
+
+# Allow running this module directly (or from notebooks) without having to
+# manually set PYTHONPATH to include the scripts directory.
+_SCRIPTS_DIR = os.path.dirname(__file__)
+if _SCRIPTS_DIR and _SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPTS_DIR)
+
 from data_generators import CustomBalancedDataGenerator
 from tensorflow.keras.utils import to_categorical
 import cv2
