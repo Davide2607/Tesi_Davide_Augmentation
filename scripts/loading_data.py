@@ -87,6 +87,7 @@ def carica_dati():
         'horizontal_flip': True,
         'fill_mode': 'wrap',
     }
+    valid_augmentations = {}
     test_augmentations = {}
     NUM_CLASSES = 7
 # Conversione delle etichette in one-hot encoding
@@ -94,7 +95,7 @@ def carica_dati():
     y_val_one_hot = to_categorical(y_val, num_classes=NUM_CLASSES)
     y_test_one_hot = to_categorical(y_test, num_classes=NUM_CLASSES)
     train_generator_focal_smoot = CustomBalancedDataGenerator(X_train, y_train_one_hot, batch_size=batch_size, augmentations=augmentations, data_inf='train', label_smoothing=0.05)
-    valid_generator_focal_smoot = CustomBalancedDataGenerator(X_val, y_val_one_hot, batch_size=batch_size, augmentations=augmentations, data_inf='valid', label_smoothing=0)
+    valid_generator_focal_smoot = CustomBalancedDataGenerator(X_val, y_val_one_hot, batch_size=batch_size, augmentations=valid_augmentations, data_inf='valid', label_smoothing=0)
     test_generator_focal_smoot = CustomBalancedDataGenerator(X_test, y_test_one_hot, batch_size=batch_size, augmentations=test_augmentations, data_inf='test', label_smoothing=0)
     
     return train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias
