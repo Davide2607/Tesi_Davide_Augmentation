@@ -88,12 +88,18 @@ def loading_data():
 def carica_dati():
     X_train, y_train, X_val, y_val, X_test, y_test, _, initial_bias = loading_data()
     batch_size = int(os.environ.get('BATCH_SIZE', '16'))
+
+    aug_rotation_range = float(os.environ.get('AUG_ROTATION_RANGE', '10'))
+    aug_width_shift_range = float(os.environ.get('AUG_WIDTH_SHIFT_RANGE', '0.2'))
+    aug_shear_range = float(os.environ.get('AUG_SHEAR_RANGE', '0.3'))
+    aug_horizontal_flip = os.environ.get('AUG_HORIZONTAL_FLIP', '1') == '1'
+    aug_fill_mode = os.environ.get('AUG_FILL_MODE', 'wrap')
     augmentations = {
-        'rotation_range': 10,
-        'width_shift_range': 0.2,
-        'shear_range': 0.3,
-        'horizontal_flip': True,
-        'fill_mode': 'wrap',
+        'rotation_range': aug_rotation_range,
+        'width_shift_range': aug_width_shift_range,
+        'shear_range': aug_shear_range,
+        'horizontal_flip': aug_horizontal_flip,
+        'fill_mode': aug_fill_mode,
     }
     valid_augmentations = {}
     test_augmentations = {}
