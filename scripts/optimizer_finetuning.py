@@ -1,5 +1,6 @@
 import argparse
 import gc
+import numpy as np
 
 # Definisci la funzione da ottimizzare
 from bayes_opt import BayesianOptimization
@@ -10,8 +11,44 @@ import tensorflow as tf
 from tensorflow.keras import backend as K
 
 
+def _compute_balanced_and_f1_macro(model, eval_generator):
+    try:
+        from sklearn.metrics import balanced_accuracy_score, precision_recall_fscore_support
+    except Exception as e:
+        raise RuntimeError(f"sklearn non disponibile per calcolare balanced_accuracy/f1_macro: {e}")
+
+    y_pred_prob = model.predict(eval_generator, verbose=0)
+    y_pred = np.argmax(y_pred_prob, axis=1)
+    y_true = np.concatenate([np.argmax(y_batch, axis=1) for _, y_batch in eval_generator], axis=0)
+
+    if len(y_true) != len(y_pred):
+        min_len = min(len(y_true), len(y_pred))
+        y_true = y_true[:min_len]
+        y_pred = y_pred[:min_len]
+
+    f1_macro = precision_recall_fscore_support(
+        y_true,
+        y_pred,
+        average='macro',
+        zero_division=0,
+    )[2]
+    balanced_acc = balanced_accuracy_score(y_true, y_pred)
+    return float(balanced_acc), float(f1_macro)
+
+
 # Definisci la funzione per creare e addestrare il modello
-def train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, trial_epochs, model_name='PattLite'):
+def train_model(
+    learning_rate,
+    dropout_rate,
+    l2_reg,
+    run,
+    train_generator_focal_smoot,
+    valid_generator_focal_smoot,
+    eval_generator,
+    initial_bias,
+    trial_epochs,
+    model_name='PattLite',
+):
     model = None
     history = None
     try:
@@ -46,7 +83,19 @@ def train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_
             run[f"{model_name}/finetuning/training/loss"].append(train_loss)
             run[f"{model_name}/finetuning/validation/loss"].append(val_loss)
 
-        return float(max(history.history['val_categorical_accuracy']))
+        balanced_acc, f1_macro = _compute_balanced_and_f1_macro(model, eval_generator)
+        # Objective: maximize both macro-F1 and balanced accuracy.
+        # Using the mean keeps the score in [0, 1].
+        score = (balanced_acc + f1_macro) / 2.0
+
+        run[f"{model_name}/eval/balanced_accuracy"].append(float(balanced_acc))
+        run[f"{model_name}/eval/f1_macro"].append(float(f1_macro))
+        run[f"{model_name}/eval/score"].append(float(score))
+        print(
+            f"[EVAL][{model_name}] balanced_accuracy={balanced_acc:.6f} f1_macro={f1_macro:.6f} score={score:.6f}"
+        )
+
+        return float(score)
     finally:
         # Evita accumulo di grafi/pesi tra i trial BO
         del history
@@ -55,18 +104,39 @@ def train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_
         gc.collect()
 
 
-def optimize_model(train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, learning_rate, dropout_rate, l2_reg, model_name, run, trial_epochs):
+def optimize_model(
+    train_generator_focal_smoot,
+    valid_generator_focal_smoot,
+    eval_generator,
+    initial_bias,
+    learning_rate,
+    dropout_rate,
+    l2_reg,
+    model_name,
+    run,
+    trial_epochs,
+):
     # Logga gli iperparametri della prova corrente
     params_final_layers = f"learning rate = {learning_rate}, dropout_rate = {dropout_rate}, l2_reg = {l2_reg}"
     run[f"{model_name}/hyperparameters"].append(params_final_layers)
 
-
-    accuracy = train_model(learning_rate, dropout_rate, l2_reg, run, train_generator_focal_smoot, valid_generator_focal_smoot, initial_bias, trial_epochs, model_name)
+    score = train_model(
+        learning_rate,
+        dropout_rate,
+        l2_reg,
+        run,
+        train_generator_focal_smoot,
+        valid_generator_focal_smoot,
+        eval_generator,
+        initial_bias,
+        trial_epochs,
+        model_name,
+    )
     
     # Logga la metrica di interesse
-    run["accuracy"] = accuracy
+    run["score"] = score
 
-    return accuracy
+    return score
 
 
 
@@ -118,7 +188,7 @@ def main():
     }
     # Funzione per caricare i dati e inizializzare il modello
     # Carica i dati
-    train_generator_focal_smoot, valid_generator_focal_smoot, _, initial_bias = carica_dati()
+    train_generator_focal_smoot, valid_generator_focal_smoot, test_generator_focal_smoot, initial_bias = carica_dati()
     
 
 
@@ -126,6 +196,7 @@ def main():
             f=lambda learning_rate, dropout_rate, l2_reg: optimize_model(
                 train_generator_focal_smoot,
                 valid_generator_focal_smoot,
+                test_generator_focal_smoot,
                 initial_bias,
                 learning_rate,
                 dropout_rate,
