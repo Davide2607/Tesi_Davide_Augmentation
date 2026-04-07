@@ -48,4 +48,4 @@ else:
 	print("[SETUP] bayes_opt already available.")
 PY
 
-python scripts/optimizer_finetuning.py --model_name ConvNeXt --learning_rate 0.0004809590540741948 --trial_epochs 5 --init_points 2 --n_iter 8
+python scripts/optimizer_finetuning.py --model_name ConvNeXt --learning_rate 0.0004809590540741948 --trial_epochs 8 --init_points 2 --n_iter 15
