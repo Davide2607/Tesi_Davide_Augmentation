@@ -8,6 +8,20 @@ from scripts.backbone import build_model_final_layers
 from scripts.loading_data import carica_dati
 
 
+def _parse_class_weights(num_classes: int):
+    raw = os.environ.get('CLASS_WEIGHTS', '').strip()
+    if not raw:
+        return None
+    parts = [p.strip() for p in raw.split(',') if p.strip()]
+    if len(parts) != num_classes:
+        raise ValueError(
+            f"CLASS_WEIGHTS deve avere {num_classes} valori separati da virgola (es. '1,1,2,1,1,1,1'). "
+            f"Trovati {len(parts)}."
+        )
+    weights = {i: float(parts[i]) for i in range(num_classes)}
+    return weights
+
+
 def set_global_seed(seed: int):
     os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
@@ -85,6 +99,8 @@ def addestra_modello(model, train_generator, valid_generator,test_generator, TRA
     fit_multiprocessing = os.environ.get('FIT_MULTIPROCESSING', '1') == '1'
     fit_max_queue_size = int(os.environ.get('FIT_MAX_QUEUE_SIZE', '16'))
 
+    class_weight = _parse_class_weights(num_classes=7)
+
     history = model.fit(
         train_generator,
         epochs=TRAIN_EPOCH,
@@ -94,6 +110,7 @@ def addestra_modello(model, train_generator, valid_generator,test_generator, TRA
         workers=fit_workers,
         use_multiprocessing=fit_multiprocessing,
         max_queue_size=fit_max_queue_size,
+        class_weight=class_weight,
     )
     
     test_loss, test_acc = model.evaluate(test_generator)
