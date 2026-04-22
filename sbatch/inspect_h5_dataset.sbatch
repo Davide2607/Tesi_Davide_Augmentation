@@ -2,9 +2,9 @@
 #SBATCH --job-name=inspect_h5
 #SBATCH --output=logs/inspect_h5_%j.out
 #SBATCH --error=logs/inspect_h5_%j.err
-#SBATCH --time=00:10:00
+#SBATCH --time=00:03:00
 #SBATCH --cpus-per-task=2
-#SBATCH --mem=4G
+#SBATCH --mem=2G
 
 set -euo pipefail
 
