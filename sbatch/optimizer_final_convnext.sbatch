@@ -17,6 +17,7 @@ set -u
 
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
+export DATASET_H5="${DATASET_H5:-/home/dravida/data/dataset.h5}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
