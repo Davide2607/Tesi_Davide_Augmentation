@@ -8,11 +8,12 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=2G
 
-set -euo pipefail
+set -eo pipefail
 
 module load miniconda3/3.13.25
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate fer_augmentation
+set -u
 
 DATASET_PATH=${DATASET_PATH:-$HOME/data/dataset_unito.h5}
 SAMPLE=${SAMPLE:-2000}
