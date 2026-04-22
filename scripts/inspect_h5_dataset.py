@@ -33,21 +33,84 @@ def _sample_indices(n: int, sample: int, rng: np.random.Generator) -> np.ndarray
     return rng.choice(n, size=sample, replace=False)
 
 
-def _print_array_stats(name: str, arr: np.ndarray):
-    arr = np.asarray(arr)
-    finite = np.isfinite(arr)
-    if finite.any():
-        vmin = float(arr[finite].min())
-        vmax = float(arr[finite].max())
-        mean = float(arr[finite].mean())
-        std = float(arr[finite].std())
-    else:
-        vmin = vmax = mean = std = float("nan")
+def _stream_h5_stats(x_ds, indices: np.ndarray, chunk_size: int = 64):
+    """Compute min/max/mean/std over selected indices without loading everything in RAM."""
+    if indices.size == 0:
+        return {
+            "shape": (0,) + tuple(x_ds.shape[1:]),
+            "dtype": x_ds.dtype,
+            "min": float("nan"),
+            "max": float("nan"),
+            "mean": float("nan"),
+            "std": float("nan"),
+            "finite_ratio": float("nan"),
+        }
 
+    # Welford's online algorithm for mean/std
+    count = 0
+    mean = 0.0
+    m2 = 0.0
+    vmin = float("inf")
+    vmax = float("-inf")
+    finite_count = 0
+    total_count = 0
+
+    for start in range(0, indices.size, chunk_size):
+        chunk_idx = indices[start : start + chunk_size]
+        x = np.asarray(x_ds[chunk_idx], dtype=np.float32)
+        flat = x.reshape(-1)
+        finite = np.isfinite(flat)
+        total_count += flat.size
+        if finite.any():
+            finite_vals = flat[finite]
+            finite_count += finite_vals.size
+
+            cmin = float(finite_vals.min())
+            cmax = float(finite_vals.max())
+            vmin = min(vmin, cmin)
+            vmax = max(vmax, cmax)
+
+            # Update mean/std with chunk
+            chunk_n = finite_vals.size
+            chunk_mean = float(finite_vals.mean())
+            chunk_var = float(finite_vals.var())  # population var
+            if count == 0:
+                mean = chunk_mean
+                m2 = chunk_var * chunk_n
+                count = chunk_n
+            else:
+                delta = chunk_mean - mean
+                new_count = count + chunk_n
+                mean = mean + delta * (chunk_n / new_count)
+                m2 = m2 + chunk_var * chunk_n + (delta * delta) * (count * chunk_n / new_count)
+                count = new_count
+
+    if finite_count == 0:
+        vmin = vmax = mean = float("nan")
+        std = float("nan")
+        finite_ratio = 0.0
+    else:
+        std = float(np.sqrt(m2 / count)) if count > 0 else float("nan")
+        finite_ratio = finite_count / total_count if total_count else float("nan")
+
+    return {
+        "shape": (int(indices.size),) + tuple(x_ds.shape[1:]),
+        "dtype": x_ds.dtype,
+        "min": vmin,
+        "max": vmax,
+        "mean": float(mean),
+        "std": std,
+        "finite_ratio": finite_ratio,
+    }
+
+
+def _print_h5_stats(name: str, x_ds, indices: np.ndarray):
+    s = _stream_h5_stats(x_ds, indices)
+    finite_pct = s["finite_ratio"] * 100.0 if np.isfinite(s["finite_ratio"]) else float("nan")
     print(
-        f"[{name}] shape={arr.shape} dtype={arr.dtype} "
-        f"min={vmin:.4f} max={vmax:.4f} mean={mean:.4f} std={std:.4f} "
-        f"finite={finite.mean()*100:.2f}%"
+        f"[{name}] shape={s['shape']} dtype={s['dtype']} "
+        f"min={s['min']:.4f} max={s['max']:.4f} mean={s['mean']:.4f} std={s['std']:.4f} "
+        f"finite={finite_pct:.2f}%"
     )
 
 
@@ -101,8 +164,7 @@ def inspect_h5(path: Path, sample: int, seed: int):
             y = np.array(f[y_key], dtype=np.int64)
 
             idx = _sample_indices(x_ds.shape[0], sample, rng)
-            x_sample = np.array(x_ds[idx], dtype=np.float32)
-            _print_array_stats(x_key + "_sample", x_sample)
+            _print_h5_stats(x_key + "_sample", x_ds, idx)
             _print_label_stats(split, y, class_names)
 
             # quick sanity
@@ -116,16 +178,15 @@ def inspect_h5(path: Path, sample: int, seed: int):
             x_ds = f["X_test"]
             y = np.array(f["y_test"], dtype=np.int64)
             idx = _sample_indices(x_ds.shape[0], sample, rng)
-            x_sample = np.array(x_ds[idx], dtype=np.float32)
-            _print_array_stats("X_test_sample", x_sample)
+            _print_h5_stats("X_test_sample", x_ds, idx)
             _print_label_stats("test", y, class_names)
 
         # Pixel scale heuristic
         if "X_train" in f:
             x_ds = f["X_train"]
             idx = _sample_indices(x_ds.shape[0], min(sample or 2000, 2000), rng)
-            x_sample = np.array(x_ds[idx], dtype=np.float32)
-            vmax = float(np.nanmax(x_sample)) if x_sample.size else 0.0
+            s = _stream_h5_stats(x_ds, idx)
+            vmax = float(s["max"]) if np.isfinite(s["max"]) else 0.0
             if vmax <= 1.5:
                 print("[WARN] Pixel max <= 1.5 (looks like 0..1). Ensure preprocessing is consistent.")
             elif vmax <= 300:
