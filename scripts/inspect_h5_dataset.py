@@ -30,11 +30,14 @@ def _normalize_class_name(name: str) -> str:
 def _sample_indices(n: int, sample: int, rng: np.random.Generator) -> np.ndarray:
     if sample is None or sample <= 0 or sample >= n:
         return np.arange(n, dtype=np.int64)
-    return rng.choice(n, size=sample, replace=False)
+    idx = rng.choice(n, size=sample, replace=False)
+    # h5py advanced indexing requires increasing order
+    return np.sort(idx.astype(np.int64, copy=False))
 
 
 def _stream_h5_stats(x_ds, indices: np.ndarray, chunk_size: int = 64):
     """Compute min/max/mean/std over selected indices without loading everything in RAM."""
+    indices = np.asarray(indices, dtype=np.int64)
     if indices.size == 0:
         return {
             "shape": (0,) + tuple(x_ds.shape[1:]),
@@ -54,6 +57,10 @@ def _stream_h5_stats(x_ds, indices: np.ndarray, chunk_size: int = 64):
     vmax = float("-inf")
     finite_count = 0
     total_count = 0
+
+    # h5py requires indices to be strictly increasing for advanced indexing.
+    if indices.size > 1 and np.any(indices[1:] < indices[:-1]):
+        indices = np.sort(indices)
 
     for start in range(0, indices.size, chunk_size):
         chunk_idx = indices[start : start + chunk_size]
