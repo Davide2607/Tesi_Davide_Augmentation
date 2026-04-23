@@ -55,17 +55,14 @@ def _align_counts_to_union(names, y_train, y_val, union_names):
         n = max(n, len(union_names))
         return _counts(y_train, n)[: len(union_names)], _counts(y_val, n)[: len(union_names)]
 
-    index_by_name = {n: i for i, n in enumerate(names)}
+    union_index_by_name = {n: i for i, n in enumerate(union_names)}
+    src_to_union = np.array([union_index_by_name[n] for n in names], dtype=np.int64)
 
-    # Remap labels into union index space
+    # Remap labels into union index space (vectorized)
     def remap(y):
         if y is None:
             return None
-        mapped = np.empty_like(y)
-        for i, v in enumerate(y.tolist()):
-            src_name = names[int(v)]
-            mapped[i] = union_names.index(src_name)
-        return mapped
+        return src_to_union[y]
 
     y_train_u = remap(y_train)
     y_val_u = remap(y_val)
