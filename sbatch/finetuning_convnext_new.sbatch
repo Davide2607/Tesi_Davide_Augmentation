@@ -26,6 +26,15 @@ export BATCH_SIZE="${BATCH_SIZE:-16}"
 export FIT_WORKERS="${FIT_WORKERS:-4}"
 export FIT_MULTIPROCESSING="${FIT_MULTIPROCESSING:-1}"
 export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
+
+# Finetuning-only augmentation overrides (train only).
+# These env vars are read by scripts/loading_data.py.
+# You can still override them at submission time.
+export AUG_ROTATION_RANGE="${AUG_ROTATION_RANGE:-8}"
+export AUG_WIDTH_SHIFT_RANGE="${AUG_WIDTH_SHIFT_RANGE:-0.08}"
+export AUG_SHEAR_RANGE="${AUG_SHEAR_RANGE:-0.08}"
+export AUG_HORIZONTAL_FLIP="${AUG_HORIZONTAL_FLIP:-1}"
+export AUG_FILL_MODE="${AUG_FILL_MODE:-nearest}"
 SEED="${SEED:-42}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
@@ -59,4 +68,4 @@ if not gpus:
 	sys.exit(1)
 PY
 
-python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.1624074561769746 --learning_rate 0.000288331559788701 --l2_reg 0.016443457513284063 --seed "$SEED"
+python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.2149693411886179 --learning_rate 0.00022412680060634408 --l2_reg 0.007413809573706404 --seed "$SEED"
