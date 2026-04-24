@@ -201,11 +201,39 @@ def merge_h5(
 
         fo.create_dataset("class_names", data=np.array(a_names, dtype="S"))
 
-        if shuffle:
-            rng = np.random.default_rng(seed)
-            perm = rng.permutation(n_total)
-        else:
-            perm = np.arange(n_total)
+        if not shuffle:
+            # Fast path: sequential copy (A then B) to avoid expensive random HDF5 indexing.
+            for start in range(0, n_a, chunk_size):
+                end = min(start + chunk_size, n_a)
+                x_train_out[start:end] = xa_tr[start:end].astype(target_dtype, copy=False)
+                y_train_out[start:end] = np.array(ya_tr[start:end], dtype=np.int32)
+                if start == 0 or end == n_a or (start // chunk_size) % 50 == 0:
+                    print(f"[write A] {end}/{n_a}")
+
+            out_offset = n_a
+            for start in range(0, n_b, chunk_size):
+                end = min(start + chunk_size, n_b)
+                x_b = np.array(xb_tr[start:end])
+                x_b = _align_scale_and_dtype(x_b, target_max, target_dtype)
+                y_b = np.array(yb_tr[start:end], dtype=np.int64)
+                if label_map is not None:
+                    y_b = label_map[y_b]
+                x_train_out[out_offset + start : out_offset + end] = x_b
+                y_train_out[out_offset + start : out_offset + end] = y_b.astype(np.int32)
+                if start == 0 or end == n_b or (start // chunk_size) % 50 == 0:
+                    print(f"[write B] {end}/{n_b}")
+
+            print("\n[done]")
+            print(f"A: {a_path}")
+            print(f"B: {b_path}")
+            print(f"OUT: {out_path}")
+            print(f"train: {n_a} + {n_b} = {n_total}")
+            print(f"val (A only): {int(x_val_out.shape[0])}")
+            print(f"class_names: {a_names}")
+            return
+
+        rng = np.random.default_rng(seed)
+        perm = rng.permutation(n_total)
 
         def write_block(out_start: int, out_end: int):
             out_idx = perm[out_start:out_end]

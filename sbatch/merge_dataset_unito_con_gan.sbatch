@@ -7,6 +7,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=8192
 #SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=8
 #SBATCH --output=/home/dravida/models/FER-Augmentation/out_err/merge_unito_gan_%j.out
 #SBATCH --error=/home/dravida/models/FER-Augmentation/out_err/merge_unito_gan_%j.err
 
@@ -25,8 +26,8 @@ A_PATH=${A_PATH:-/home/dravida/data/dataset.h5}
 B_PATH=${B_PATH:-/home/dravida/data/database_zero.h5}
 OUT_PATH=${OUT_PATH:-/home/dravida/data/dataset_unito_con_GAN.h5}
 SEED=${SEED:-42}
-CHUNK_SIZE=${CHUNK_SIZE:-256}
-NO_SHUFFLE=${NO_SHUFFLE:-0}
+CHUNK_SIZE=${CHUNK_SIZE:-2048}
+NO_SHUFFLE=${NO_SHUFFLE:-1}
 
 echo "[INFO] A_PATH=${A_PATH}"
 echo "[INFO] B_PATH=${B_PATH}"
