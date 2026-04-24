@@ -26,6 +26,8 @@ export BATCH_SIZE="${BATCH_SIZE:-16}"
 export FIT_WORKERS="${FIT_WORKERS:-4}"
 export FIT_MULTIPROCESSING="${FIT_MULTIPROCESSING:-1}"
 export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
+
+echo "[INFO] DATASET_H5=${DATASET_H5}"
 SEED="${SEED:-42}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"

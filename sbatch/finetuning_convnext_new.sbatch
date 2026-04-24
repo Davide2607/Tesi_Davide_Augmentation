@@ -27,6 +27,8 @@ export FIT_WORKERS="${FIT_WORKERS:-4}"
 export FIT_MULTIPROCESSING="${FIT_MULTIPROCESSING:-1}"
 export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
 
+echo "[INFO] DATASET_H5=${DATASET_H5}"
+
 # Finetuning-only augmentation overrides (train only).
 # These env vars are read by scripts/loading_data.py.
 # You can still override them at submission time.
