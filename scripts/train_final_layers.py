@@ -136,38 +136,40 @@ def valuta_modello(model, test_generator, run, model_name):
 
 # Funzione per salvare il modello e la storia dell'addestramento
 def salva_modello(model, run, model_name):
+    model_dir = os.environ.get('MODEL_DIR', 'model')
+    os.makedirs(model_dir, exist_ok=True)
     try:
         # Salva il modello in formato TensorFlow
-        model.save(f'model/pretrained_{model_name}_final_layers', save_format='tf')
+        model.save(f'{model_dir}/pretrained_{model_name}_final_layers', save_format='tf')
         print(f"Model saved as pretrained_{model_name}_final_layers")
     except Exception as e:
         print(f"An error occurred while saving the model in TensorFlow format: {e}")
 
     try:
         # Salva il modello in formato HDF5
-        model.save(f'model/pretrained_{model_name}_final_layers.h5', save_format='h5')
+        model.save(f'{model_dir}/pretrained_{model_name}_final_layers.h5', save_format='h5')
         print(f"Model saved as pretrained_{model_name}_final_layers.h5")
     except Exception as e:
         print(f"An error occurred while saving the model in HDF5 format: {e}")
 
     try:
         # Salva il modello in formato Keras
-        model.save(f'model/pretrained_{model_name}_final_layers.keras', save_format='keras')
+        model.save(f'{model_dir}/pretrained_{model_name}_final_layers.keras', save_format='keras')
         print(f"Model saved as pretrained_{model_name}_final_layers.keras")
     except Exception as e:
         print(f"An error occurred while saving the model in Keras format: {e}")
 
     try:
         # Salva i pesi del modello
-        model.save_weights(f'model/pretrained_{model_name}_final_layers_weights.h5')
+        model.save_weights(f'{model_dir}/pretrained_{model_name}_final_layers_weights.h5')
         print(f"Model weights saved as pretrained_{model_name}_final_layers_weights.h5")
     except Exception as e:
         print(f"An error occurred while saving the model weights: {e}")
 
     try:
         # Carica i file su Neptune
-        run[f"{model_name}/saved_model"].upload(f'pretrained_{model_name}_final_layers')
-        run[f"{model_name}/saved_weights"].upload(f'pretrained_{model_name}_final_layers_weights.h5')
+        run[f"{model_name}/saved_model"].upload(f'{model_dir}/pretrained_{model_name}_final_layers')
+        run[f"{model_name}/saved_weights"].upload(f'{model_dir}/pretrained_{model_name}_final_layers_weights.h5')
     except Exception as e:
         print(f"An error occurred while uploading the model to Neptune: {e}")
 

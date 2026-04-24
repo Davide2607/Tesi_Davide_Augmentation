@@ -143,7 +143,8 @@ def get_unique_filename(base_path, base_name, extension):
 
 # Funzione per salvare il modello e la storia dell'addestramento
 def salva_modello(model, run, model_name):
-    base_path = 'model/finetuning'
+    model_dir = os.environ.get('MODEL_DIR', 'model')
+    base_path = os.path.join(model_dir, 'finetuning')
     os.makedirs(base_path, exist_ok=True)
     
     try:

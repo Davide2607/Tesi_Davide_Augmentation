@@ -11,10 +11,15 @@ from tensorflow.keras.regularizers import l2
 from tensorflow.keras.applications import MobileNet, ResNet50V2, VGG19, EfficientNetB1, InceptionV3, ConvNeXtBase
 from losses import categorical_focal_loss
 from tensorflow.keras.losses import Loss
+import os
 
 
 # Aggiungi la funzione di perdita personalizzata al dizionario degli oggetti personalizzati
 custom_objects = {'loss': categorical_focal_loss()}
+
+
+def _model_dir() -> str:
+    return os.environ.get('MODEL_DIR', 'model')
 
 
 class ExpandDimsLayer(Layer):
@@ -125,7 +130,7 @@ def build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, mo
     if model_name == 'EfficientNetB1':
         with tf.keras.utils.custom_object_scope(custom_objects):
             model = build_model_final_layers(learning_rate, dropout_rate, l2_reg, initial_bias, model_name)
-            model.load_weights(f'model/pretrained_{model_name}_final_layers_weights.h5')
+            model.load_weights(f'{_model_dir()}/pretrained_{model_name}_final_layers_weights.h5')
         backbone = model.get_layer('base_model')
         backbone.trainable = True
 
@@ -134,7 +139,7 @@ def build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, mo
     elif model_name == 'VGG19':
          # Scarica il modello dal server locale
         with tf.keras.utils.custom_object_scope(custom_objects):
-            model = tf.keras.models.load_model(f'model/pretrained_{model_name}_final_layers')
+            model = tf.keras.models.load_model(f'{_model_dir()}/pretrained_{model_name}_final_layers')
         backbone = model.get_layer('base_model')
         backbone.trainable = True
 
@@ -144,7 +149,7 @@ def build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, mo
 
          # Scarica il modello dal server locale
         with tf.keras.utils.custom_object_scope(custom_objects):
-            model = tf.keras.models.load_model(f'model/pretrained_{model_name}_final_layers')
+            model = tf.keras.models.load_model(f'{_model_dir()}/pretrained_{model_name}_final_layers')
         backbone = model.get_layer('base_model')
         backbone.trainable = True
         ### prima era unfreeze = 10
@@ -161,7 +166,7 @@ def build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, mo
         unfreeze = 70
     elif model_name == 'ConvNeXt':
         with tf.keras.utils.custom_object_scope(custom_objects):
-            model = tf.keras.models.load_model(f'model/pretrained_{model_name}_final_layers')
+            model = tf.keras.models.load_model(f'{_model_dir()}/pretrained_{model_name}_final_layers')
         backbone = model.get_layer('base_model')
         backbone.trainable = True
         ## prima era unfreeze = 10
@@ -169,7 +174,7 @@ def build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, mo
     elif model_name == 'InceptionV3':
          # Scarica il modello dal server locale
         with tf.keras.utils.custom_object_scope(custom_objects):
-            model = tf.keras.models.load_model(f'model/pretrained_{model_name}_final_layers')
+            model = tf.keras.models.load_model(f'{_model_dir()}/pretrained_{model_name}_final_layers')
         backbone = model.get_layer('base_model')
         backbone.trainable = True
         

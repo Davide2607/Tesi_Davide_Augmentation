@@ -22,12 +22,14 @@ set -u
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_primo_metodo.h5}"
+export MODEL_DIR="${MODEL_DIR:-model}"
 export BATCH_SIZE="${BATCH_SIZE:-16}"
 export FIT_WORKERS="${FIT_WORKERS:-4}"
 export FIT_MULTIPROCESSING="${FIT_MULTIPROCESSING:-1}"
 export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
 
 echo "[INFO] DATASET_H5=${DATASET_H5}"
+echo "[INFO] MODEL_DIR=${MODEL_DIR}"
 
 # Finetuning-only augmentation overrides (train only).
 # These env vars are read by scripts/loading_data.py.
