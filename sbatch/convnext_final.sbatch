@@ -21,7 +21,7 @@ set -u
 
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
-export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_primo_metodo.h5}"
+export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_secondo_metodo.h5}"
 export MODEL_DIR="${MODEL_DIR:-model}"
 export BATCH_SIZE="${BATCH_SIZE:-16}"
 export FIT_WORKERS="${FIT_WORKERS:-4}"
@@ -63,4 +63,4 @@ if not gpus:
 	sys.exit(1)
 PY
 
-python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.0007587945476302646 --l2_reg 0.06026718993550663 --seed "$SEED"
+python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.00024041677639819288 --l2_reg 0.016443457513284063 --seed "$SEED"
