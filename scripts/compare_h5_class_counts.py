@@ -39,6 +39,17 @@ def _load_labels_and_names(path: Path):
     return names, y_train, y_val
 
 
+def _load_test_labels_and_names(path: Path):
+    with h5py.File(path, "r") as f:
+        names = _decode_class_names(f["class_names"][:] if "class_names" in f else None)
+        if names is not None:
+            names = [_normalize_class_name(n) for n in names]
+
+        y_test = np.array(f["y_test"], dtype=np.int64) if "y_test" in f else None
+
+    return names, y_test
+
+
 def _counts(y: np.ndarray, n: int) -> np.ndarray:
     if y is None:
         return np.zeros((n,), dtype=np.int64)
@@ -70,7 +81,18 @@ def _align_counts_to_union(names, y_train, y_val, union_names):
     return _counts(y_train_u, len(union_names)), _counts(y_val_u, len(union_names))
 
 
-def compare(path_a: Path, path_b: Path):
+def _compute_name_based_remap(src_names, dst_names):
+    """Return dict mapping src_idx -> dst_idx based on class names."""
+    dst_index_by_name = {n: i for i, n in enumerate(dst_names)}
+    missing = [n for n in src_names if n not in dst_index_by_name]
+    if missing:
+        raise ValueError(
+            "class_names mismatch and some classes are missing in destination: " + ", ".join(missing)
+        )
+    return {src_i: dst_index_by_name[n] for src_i, n in enumerate(src_names)}
+
+
+def compare(path_a: Path, path_b: Path, test_path: Path | None = None):
     names_a, ytr_a, yva_a = _load_labels_and_names(path_a)
     names_b, ytr_b, yva_b = _load_labels_and_names(path_b)
 
@@ -112,6 +134,47 @@ def compare(path_a: Path, path_b: Path):
     print(f"A train={int(tr_a.sum())} val={int(va_a.sum())} total={int(tr_a.sum()+va_a.sum())}")
     print(f"B train={int(tr_b.sum())} val={int(va_b.sum())} total={int(tr_b.sum()+va_b.sum())}")
 
+    if test_path is None:
+        return
+
+    # Adele/test consistency check vs the primary training class order.
+    ref_names = names_a if names_a is not None else names_b
+    if ref_names is None:
+        raise ValueError("Cannot check test mapping: no class_names in A nor B.")
+
+    test_names, y_test = _load_test_labels_and_names(test_path)
+    print("\n[test consistency]")
+    print(f"[test] {test_path}")
+    if test_names is None:
+        print("[test class_names] MISSING (assuming y_test already matches training class order)")
+        remap = None
+    else:
+        print(f"[test class_names] {test_names}")
+        if test_names == ref_names:
+            print("[OK] test class_names order matches training")
+            remap = None
+        else:
+            remap = _compute_name_based_remap(test_names, ref_names)
+            print("[WARN] test class_names order differs; remap test_idx -> train_idx:")
+            for k in sorted(remap.keys()):
+                print(f"  {k} ({test_names[k]}) -> {remap[k]} ({ref_names[remap[k]]})")
+
+    print("\n[train idx -> class]")
+    for i, n in enumerate(ref_names):
+        print(f"  class_{i}: {n}")
+
+    if y_test is None:
+        print("\n[test y_test] MISSING in H5")
+        return
+
+    if remap is not None:
+        y_test = np.vectorize(remap.get)(y_test)
+
+    test_counts = _counts(y_test, len(ref_names))
+    print("\n[test y_test] counts (in train index space):")
+    for i, n in enumerate(ref_names):
+        print(f"  {i:2d} {n:12s}: {int(test_counts[i])}")
+
 
 def parse_args():
     p = argparse.ArgumentParser(description="Compare class counts between two FER HDF5 datasets.")
@@ -127,12 +190,21 @@ def parse_args():
         default=Path(os.path.expanduser("~/data/dataset_augmented.h5")),
         help="Second H5 path (e.g., dataset_augmented.h5)",
     )
+    p.add_argument(
+        "--test",
+        type=Path,
+        default=None,
+        help=(
+            "Optional test H5 path (e.g., ~/data/test_data_adele.h5). "
+            "If provided, prints class_names mapping test_idx->train_idx and test label counts."
+        ),
+    )
     return p.parse_args()
 
 
 def main():
     args = parse_args()
-    compare(args.a, args.b)
+    compare(args.a, args.b, test_path=args.test)
 
 
 if __name__ == "__main__":
