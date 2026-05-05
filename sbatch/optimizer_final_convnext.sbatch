@@ -24,6 +24,8 @@ export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
 export TF_FORCE_GPU_ALLOW_GROWTH=true
 export TF_CPP_MIN_LOG_LEVEL=1
 
+echo "[INFO] DATASET_H5=${DATASET_H5}"
+
 echo "[GPU CHECK] nvidia-smi"
 nvidia-smi || { echo "[FATAL] nvidia-smi non disponibile"; exit 1; }
 
