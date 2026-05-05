@@ -18,5 +18,11 @@ export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/T
 
 A_PATH=${A_PATH:-$HOME/data/dataset.h5}
 B_PATH=${B_PATH:-$HOME/data/dataset_augmented.h5}
+TEST_PATH=${TEST_PATH:-}
 
-python -u scripts/compare_h5_class_counts.py --a "$A_PATH" --b "$B_PATH"
+EXTRA_ARGS=()
+if [ -n "${TEST_PATH}" ]; then
+	EXTRA_ARGS=(--test "${TEST_PATH}")
+fi
+
+python -u scripts/compare_h5_class_counts.py --a "$A_PATH" --b "$B_PATH" "${EXTRA_ARGS[@]}"
