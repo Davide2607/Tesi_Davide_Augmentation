@@ -17,7 +17,8 @@ set -u
 
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
-export DATASET_H5="${DATASET_H5:-/home/dravida/data/dataset.h5}"
+export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_secondo_metodo.h5}"
+export MODEL_DIR="${MODEL_DIR:-model}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
@@ -25,6 +26,18 @@ export TF_FORCE_GPU_ALLOW_GROWTH=true
 export TF_CPP_MIN_LOG_LEVEL=1
 
 echo "[INFO] DATASET_H5=${DATASET_H5}"
+echo "[INFO] MODEL_DIR=${MODEL_DIR}"
+
+# Finetuning optimizer loads the final-layers model from MODEL_DIR.
+if [ ! -d "${MODEL_DIR}/pretrained_ConvNeXt_final_layers" ] && [ ! -f "${MODEL_DIR}/pretrained_ConvNeXt_final_layers.keras" ] && [ ! -f "${MODEL_DIR}/pretrained_ConvNeXt_final_layers.h5" ]; then
+	echo "[FATAL] Pretrained final-layers model not found in MODEL_DIR=${MODEL_DIR}."
+	echo "        Expected one of:"
+	echo "          - ${MODEL_DIR}/pretrained_ConvNeXt_final_layers (SavedModel dir)"
+	echo "          - ${MODEL_DIR}/pretrained_ConvNeXt_final_layers.keras"
+	echo "          - ${MODEL_DIR}/pretrained_ConvNeXt_final_layers.h5"
+	echo "        Run sbatch/convnext_final.sbatch first with the same MODEL_DIR."
+	exit 2
+fi
 
 echo "[GPU CHECK] nvidia-smi"
 nvidia-smi || { echo "[FATAL] nvidia-smi non disponibile"; exit 1; }
@@ -51,4 +64,4 @@ else:
 	print("[SETUP] bayes_opt already available.")
 PY
 
-python scripts/optimizer_finetuning.py --model_name ConvNeXt --learning_rate 0.0004809590540741948 --trial_epochs 8 --init_points 2 --n_iter 15
+python -u scripts/optimizer_finetuning.py --model_name ConvNeXt --learning_rate 0.0004809590540741948 --trial_epochs 8 --init_points 2 --n_iter 15
