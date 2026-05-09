@@ -31,6 +31,11 @@ export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
 echo "[INFO] DATASET_H5=${DATASET_H5}"
 echo "[INFO] MODEL_DIR=${MODEL_DIR}"
 
+FT_LR="${FT_LR:-0.000288331559788701}"
+FT_DROPOUT="${FT_DROPOUT:-0.1624074561769746}"
+FT_L2="${FT_L2:-0.016443457513284063}"
+echo "[INFO] FT_LR=${FT_LR} FT_DROPOUT=${FT_DROPOUT} FT_L2=${FT_L2}"
+
 # Finetuning-only augmentation overrides (train only).
 # These env vars are read by scripts/loading_data.py.
 # You can still override them at submission time.
@@ -72,4 +77,4 @@ if not gpus:
 	sys.exit(1)
 PY
 
-python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate 0.1624074561769746 --learning_rate 0.000288331559788701 --l2_reg 0.016443457513284063 --seed "$SEED"
+python scripts/finetuning.py --model_name ConvNeXt --FT_EPOCH 300 --dropout_rate "${FT_DROPOUT}" --learning_rate "${FT_LR}" --l2_reg "${FT_L2}" --seed "$SEED"

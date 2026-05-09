@@ -31,6 +31,11 @@ export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
 echo "[INFO] DATASET_H5=${DATASET_H5}"
 echo "[INFO] MODEL_DIR=${MODEL_DIR}"
 SEED="${SEED:-42}"
+FINAL_LR="${FINAL_LR:-0.00024041677639819288}"
+FINAL_DROPOUT="${FINAL_DROPOUT:-0.5}"
+FINAL_L2="${FINAL_L2:-0.016443457513284063}"
+
+echo "[INFO] FINAL_LR=${FINAL_LR} FINAL_DROPOUT=${FINAL_DROPOUT} FINAL_L2=${FINAL_L2}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
@@ -63,4 +68,4 @@ if not gpus:
 	sys.exit(1)
 PY
 
-python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate 0.5 --learning_rate 0.00024041677639819288 --l2_reg 0.016443457513284063 --seed "$SEED"
+python scripts/train_final_layers.py --model_name ConvNeXt --TRAIN_EPOCH 300 --dropout_rate "${FINAL_DROPOUT}" --learning_rate "${FINAL_LR}" --l2_reg "${FINAL_L2}" --seed "$SEED"
