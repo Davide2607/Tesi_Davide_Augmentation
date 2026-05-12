@@ -51,4 +51,4 @@ else:
 	print("[SETUP] bayes_opt already available.")
 PY
 
-python scripts/optimizer_final_layers.py --model_name ConvNeXt --trial_epochs 8 --init_points 4 --n_iter 20
+python scripts/optimizer_final_layers.py --model_name ConvNeXt --trial_epochs 5 --init_points 4 --n_iter 10
