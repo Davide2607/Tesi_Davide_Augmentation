@@ -52,3 +52,4 @@ else:
 PY
 
 python scripts/optimizer_final_layers.py --model_name ConvNeXt --trial_epochs 5 --init_points 4 --n_iter 10
+tail -n 60 /home/dravida/models/FER-Augmentation/out_err/convnext_ft_<JOBID>.out
