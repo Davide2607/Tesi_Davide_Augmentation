@@ -17,7 +17,7 @@ set -u
 
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
-export DATASET_H5="${DATASET_H5:-/home/dravida/data/dataset.h5}"
+export DATASET_H5="${DATASET_H5:-/home/dravida/data/dataset_unito_con_GAN.h5}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
@@ -25,6 +25,9 @@ export TF_FORCE_GPU_ALLOW_GROWTH=true
 export TF_CPP_MIN_LOG_LEVEL=1
 
 echo "[INFO] DATASET_H5=${DATASET_H5}"
+OUT_FILE="/home/dravida/models/FER-Augmentation/out_err/convnext_opt_final_${SLURM_JOB_ID}.out"
+ERR_FILE="/home/dravida/models/FER-Augmentation/out_err/convnext_opt_final_${SLURM_JOB_ID}.err"
+echo "[INFO] Logs: ${OUT_FILE} / ${ERR_FILE}"
 
 echo "[GPU CHECK] nvidia-smi"
 nvidia-smi || { echo "[FATAL] nvidia-smi non disponibile"; exit 1; }
@@ -51,5 +54,6 @@ else:
 	print("[SETUP] bayes_opt already available.")
 PY
 
-python scripts/optimizer_final_layers.py --model_name ConvNeXt --trial_epochs 5 --init_points 4 --n_iter 10
-tail -n 60 /home/dravida/models/FER-Augmentation/out_err/convnext_ft_<JOBID>.out
+python -u scripts/optimizer_final_layers.py --model_name ConvNeXt --trial_epochs 5 --init_points 4 --n_iter 10
+
+echo "[INFO] Optimizer finished. (If needed) tail -n 120 ${OUT_FILE}"
