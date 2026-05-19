@@ -13,6 +13,10 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate fer_augmentation
 set -u
 
+echo "[ENV] python=$(command -v python)"
+python -c "import sys; print('[ENV] sys.executable=', sys.executable); print('[ENV] sys.version=', sys.version.replace('\n',' '))"
+python -c "import h5py; print('[ENV] h5py=', h5py.__version__)" || { echo "[ENV ERROR] h5py not available in this environment. Try: conda activate fer_augmentation ; python -m pip install h5py"; exit 1; }
+
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 
