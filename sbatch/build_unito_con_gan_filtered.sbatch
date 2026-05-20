@@ -53,24 +53,32 @@ MAX_PER_DIR=${MAX_PER_DIR:-500}
 OUT_H5=${OUT_H5:-/home/dravida/data/dataset_unito_con_GAN_filtered_cap500.h5}
 SEED=${SEED:-42}
 
+# If 1, reuse existing filtered dirs (skip running filter_stylegan_images.py)
+SKIP_FILTER=${SKIP_FILTER:-0}
+
 echo "[INFO] ORIG_H5=${ORIG_H5}"
 echo "[INFO] MODEL_PATH=${MODEL_PATH} (MODEL_NAME=${MODEL_NAME})"
 echo "[INFO] DISGUST_IN=${DISGUST_IN} -> ${DISGUST_OUT}"
 echo "[INFO] SURPRISE_IN=${SURPRISE_IN} -> ${SURPRISE_OUT}"
 echo "[INFO] CONF_THRESH=${CONF_THRESH} MAX_PER_DIR=${MAX_PER_DIR}"
 echo "[INFO] OUT_H5=${OUT_H5}"
+echo "[INFO] SKIP_FILTER=${SKIP_FILTER}"
 
 # Quick checks
 python -c "import os; import tensorflow as tf; print('[GPU]', tf.config.list_physical_devices('GPU')); print('[ORIG exists]', os.path.exists(os.path.expanduser('${ORIG_H5}'))); print('[MODEL exists]', os.path.exists(os.path.expanduser('${MODEL_PATH}')))"
 
 # Class indices follow training order: 0=ANGRY 1=DISGUST 2=FEAR 3=HAPPY 4=NEUTRAL 5=SAD 6=SURPRISE
-python -u scripts/filter_stylegan_images.py \
-  --input-dir "${DISGUST_IN}" \
-  --model-path "${MODEL_PATH}" \
-  --model-name "${MODEL_NAME}" \
-  --target-class 1 \
-  --confidence-threshold "${CONF_THRESH}" \
-  --output-dir "${DISGUST_OUT}"
+if [ "${SKIP_FILTER}" -eq 0 ]; then
+  python -u scripts/filter_stylegan_images.py \
+    --input-dir "${DISGUST_IN}" \
+    --model-path "${MODEL_PATH}" \
+    --model-name "${MODEL_NAME}" \
+    --target-class 1 \
+    --confidence-threshold "${CONF_THRESH}" \
+    --output-dir "${DISGUST_OUT}"
+else
+  echo "[INFO] SKIP_FILTER=1: reusing existing ${DISGUST_OUT}"
+fi
 
 python - <<PY
 import numpy as np
@@ -82,13 +90,17 @@ if not hasattr(arr, 'shape') or arr.shape[0] == 0:
     raise SystemExit("[FATAL] DISGUST filtering produced 0 images. Aborting.")
 PY
 
-python -u scripts/filter_stylegan_images.py \
-  --input-dir "${SURPRISE_IN}" \
-  --model-path "${MODEL_PATH}" \
-  --model-name "${MODEL_NAME}" \
-  --target-class 6 \
-  --confidence-threshold "${CONF_THRESH}" \
-  --output-dir "${SURPRISE_OUT}"
+if [ "${SKIP_FILTER}" -eq 0 ]; then
+  python -u scripts/filter_stylegan_images.py \
+    --input-dir "${SURPRISE_IN}" \
+    --model-path "${MODEL_PATH}" \
+    --model-name "${MODEL_NAME}" \
+    --target-class 6 \
+    --confidence-threshold "${CONF_THRESH}" \
+    --output-dir "${SURPRISE_OUT}"
+else
+  echo "[INFO] SKIP_FILTER=1: reusing existing ${SURPRISE_OUT}"
+fi
 
 python - <<PY
 import numpy as np
