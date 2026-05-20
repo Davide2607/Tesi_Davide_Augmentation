@@ -47,14 +47,32 @@ def _load_one_synthetic_dir(syn_dir: Path, target_max: float, target_dtype, max_
     synth_labels = np.load(labels_path)
     rare_idx = np.load(rare_idx_path)
 
-    label_map_rev = {local: int(global_id) for local, global_id in enumerate(rare_idx)}
+    # Two supported conventions for synthetic_labels.npy:
+    # 1) LOCAL labels: values in [0, len(rare_idx)-1] that must be mapped using rare_class_indices.npy
+    # 2) GLOBAL labels: values already in dataset label space; must be subset of rare_idx
+    synth_labels = np.asarray(synth_labels).astype(np.int64, copy=False)
+    rare_idx = np.asarray(rare_idx).astype(np.int64, copy=False)
+    rare_set = set(rare_idx.tolist())
 
-    try:
+    is_local = False
+    if rare_idx.size > 0:
+        local_set = set(range(int(rare_idx.size)))
+        # Treat as local only if *all* labels are within the local index range.
+        is_local = set(np.unique(synth_labels).tolist()).issubset(local_set)
+
+    if is_local:
+        label_map_rev = {local: int(global_id) for local, global_id in enumerate(rare_idx)}
         synth_labels_global = np.array([label_map_rev[int(v)] for v in synth_labels], dtype=np.int32)
-    except KeyError as exc:
-        raise ValueError(
-            f"Label {exc} in {labels_path} not present in local label map built from {rare_idx_path}"
-        ) from exc
+    else:
+        # If labels are already global, they must be within the provided rare_idx.
+        uniq = set(np.unique(synth_labels).tolist())
+        if uniq.issubset(rare_set):
+            synth_labels_global = synth_labels.astype(np.int32, copy=False)
+        else:
+            raise ValueError(
+                "Synthetic labels are neither local (0..k-1) nor valid global labels for the provided rare_class_indices. "
+                f"uniq_labels={sorted(list(uniq))[:20]} (showing up to 20), rare_idx={rare_idx.tolist()}, dir={syn_dir}"
+            )
 
     if max_per_dir is not None and max_per_dir > 0 and len(synth_labels_global) > max_per_dir:
         if rng is None:
@@ -67,7 +85,7 @@ def _load_one_synthetic_dir(syn_dir: Path, target_max: float, target_dtype, max_
 
     print(
         f"[{syn_dir.name}] images={synth_images.shape} labels={synth_labels.shape} "
-        f"mapped_labels={synth_labels_global.shape} rare_idx={rare_idx.tolist()}"
+        f"mapped_labels={synth_labels_global.shape} rare_idx={rare_idx.tolist()} (labels_format={'local' if is_local else 'global'})"
     )
 
     return synth_images, synth_labels_global
