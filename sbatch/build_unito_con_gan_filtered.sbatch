@@ -72,7 +72,7 @@ python -u scripts/filter_stylegan_images.py \
   --confidence-threshold "${CONF_THRESH}" \
   --output-dir "${DISGUST_OUT}"
 
-python - <<'PY'
+python - <<PY
 import numpy as np
 from pathlib import Path
 path = Path("${DISGUST_OUT}") / "synthetic_images.npy"
@@ -90,7 +90,7 @@ python -u scripts/filter_stylegan_images.py \
   --confidence-threshold "${CONF_THRESH}" \
   --output-dir "${SURPRISE_OUT}"
 
-python - <<'PY'
+python - <<PY
 import numpy as np
 from pathlib import Path
 path = Path("${SURPRISE_OUT}") / "synthetic_images.npy"
