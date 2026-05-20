@@ -31,11 +31,47 @@ def set_global_seed(seed: int):
 
 def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
     try:
-        from sklearn.metrics import precision_recall_fscore_support, balanced_accuracy_score
+        from sklearn.metrics import (
+            balanced_accuracy_score,
+            confusion_matrix,
+            precision_recall_fscore_support,
+        )
     except Exception as e:
         print(f"sklearn non disponibile, salto metriche aggiuntive: {e}")
         run[f"{model_name}/{stage_name}/test/extra_metrics_error"].log(str(e))
         return
+
+    def _normalize_class_name(name: str) -> str:
+        name = name.strip()
+        if name.startswith('synthetic_'):
+            name = name[len('synthetic_'):]
+        if name == 'EAR':
+            name = 'FEAR'
+        return name
+
+    def _try_get_class_names() -> list[str] | None:
+        dataset_path = os.environ.get('DATASET_H5', '').strip()
+        if not dataset_path:
+            return None
+        try:
+            import h5py
+            import numpy as _np
+
+            with h5py.File(os.path.expanduser(dataset_path), 'r') as f:
+                if 'class_names' not in f:
+                    return None
+                raw = f['class_names'][:]
+
+            names: list[str] = []
+            for v in raw:
+                if isinstance(v, (bytes, _np.bytes_)):
+                    names.append(v.decode('utf-8'))
+                else:
+                    names.append(str(v))
+            return [_normalize_class_name(n) for n in names]
+        except Exception as e:
+            print(f"[METRICS][{stage_name}][WARN] Impossibile leggere class_names da DATASET_H5='{dataset_path}': {e}")
+            return None
 
     y_pred_prob = model.predict(test_generator, verbose=0)
     y_pred = np.argmax(y_pred_prob, axis=1)
@@ -52,15 +88,21 @@ def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
     precision_weighted, recall_weighted, f1_weighted, _ = precision_recall_fscore_support(
         y_true, y_pred, average='weighted', zero_division=0
     )
+    n_classes = int(y_pred_prob.shape[1])
+    labels = np.arange(n_classes)
     balanced_acc = balanced_accuracy_score(y_true, y_pred)
-    _, recall_per_class, _, _ = precision_recall_fscore_support(
+    precision_per_class, recall_per_class, f1_per_class, support_per_class = precision_recall_fscore_support(
         y_true,
         y_pred,
-        labels=np.arange(y_pred_prob.shape[1]),
+        labels=labels,
         average=None,
         zero_division=0,
     )
     worst_class_idx = int(np.argmin(recall_per_class))
+
+    class_names = _try_get_class_names()
+    if class_names is None or len(class_names) != n_classes:
+        class_names = [f"class_{i}" for i in range(n_classes)]
 
     run[f"{model_name}/{stage_name}/test/precision_macro"].log(float(precision_macro))
     run[f"{model_name}/{stage_name}/test/recall_macro"].log(float(recall_macro))
@@ -80,15 +122,38 @@ def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
         f"f1_weighted={f1_weighted:.6f} "
         f"balanced_accuracy={balanced_acc:.6f}"
     )
+    true_counts = np.bincount(y_true, minlength=n_classes)
+    pred_counts = np.bincount(y_pred, minlength=n_classes)
+    print(
+        f"[METRICS][{stage_name}][class_dist] "
+        + " ".join([f"{class_names[i]}:true={int(true_counts[i])},pred={int(pred_counts[i])}" for i in range(n_classes)])
+    )
+
     per_class_recall_str = " ".join(
-        [f"class_{i}={v:.6f}" for i, v in enumerate(recall_per_class)]
+        [f"{class_names[i]}={float(v):.6f}" for i, v in enumerate(recall_per_class)]
     )
     print(
         f"[METRICS][{stage_name}][per_class_recall] "
         f"{per_class_recall_str} "
-        f"worst_class=class_{worst_class_idx} "
+        f"worst_class={class_names[worst_class_idx]} "
         f"worst_recall={recall_per_class[worst_class_idx]:.6f}"
     )
+
+    per_class_prf_str = " ".join(
+        [
+            f"{class_names[i]}:p={float(precision_per_class[i]):.3f},r={float(recall_per_class[i]):.3f},f1={float(f1_per_class[i]):.3f},n={int(support_per_class[i])}"
+            for i in range(n_classes)
+        ]
+    )
+    print(f"[METRICS][{stage_name}][per_class_prf] {per_class_prf_str}")
+
+    cm = confusion_matrix(y_true, y_pred, labels=labels)
+    print(f"[METRICS][{stage_name}][confusion_matrix] rows=true cols=pred")
+    header = "pred-> " + " ".join([f"{name[:4]:>4s}" for name in class_names])
+    print(header)
+    for i, name in enumerate(class_names):
+        row = " ".join([f"{int(v):4d}" for v in cm[i].tolist()])
+        print(f"{name[:4]:>4s} | {row}")
 
 # Funzione per addestrare il modello
 def addestra_modello(model, train_generator, valid_generator,test_generator, TRAIN_EPOCH, TRAIN_ES_PATIENCE, TRAIN_LR_PATIENCE, ES_LR_MIN_DELTA, TRAIN_MIN_LR, run, model_name):
