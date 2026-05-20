@@ -113,17 +113,16 @@ def load_fer_model(model_path, model_name='EfficientNetB1'):
     }
     
     try:
-        model = load_model(model_path, custom_objects=custom_objects)
+        # NOTE: we load with compile=False to avoid requiring training-time custom
+        # losses/metrics (e.g., focal loss) just for inference filtering.
+        model = load_model(model_path, custom_objects=custom_objects, compile=False)
         print(f"Model loaded successfully")
         return model
     except Exception as e:
         print(f"Error loading model: {e}")
         print("Full traceback:")
         traceback.print_exc()
-        print("Building model from scratch (requires initial_bias)")
-        initial_bias = np.zeros(7)  # fallback
-        model = build_model_final_layers(0.001, 0.1, 0.1, initial_bias, model_name)
-        return model
+        raise
 
 
 def load_stylegan_images(input_dir):
@@ -168,11 +167,16 @@ def filter_by_confidence(images, target_class, model, confidence_threshold=0.7):
     print(f"\n=== Filtering with confidence >= {confidence_threshold} ===")
     print(f"Target class: {target_class}")
     
-    # Normalize to [0,1]
-    images_norm = images.astype('float32') / 255.0
+    # Feed images in the same scale used during training.
+    # In this project the model graphs usually contain preprocessing layers
+    # (preprocess_input or ConvNeXt include_preprocessing), which expect 0..255.
+    images_in = images.astype('float32', copy=False)
+    vmax = float(np.nanmax(images_in)) if images_in.size else 0.0
+    if vmax <= 1.5:
+        images_in = images_in * 255.0
     
     # Predict
-    predictions = model.predict(images_norm, batch_size=32, verbose=1)
+    predictions = model.predict(images_in, batch_size=32, verbose=1)
     pred_classes = np.argmax(predictions, axis=1)
     pred_confidences = np.max(predictions, axis=1)
     

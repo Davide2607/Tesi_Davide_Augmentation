@@ -42,8 +42,8 @@ SURPRISE_IN=${SURPRISE_IN:-/home/dravida/models/stylegan2_generated_surprise}
 CONF_THRESH=${CONF_THRESH:-0.85}
 
 # Where to write filtered synthetic npy bundles
-DISGUST_OUT=${DISGUST_OUT:-/home/dravida/models/STYLE_GAN_filtered_disgust_thr085}
-SURPRISE_OUT=${SURPRISE_OUT:-/home/dravida/models/STYLE_GAN_filtered_surprise_thr085}
+DISGUST_OUT=${DISGUST_OUT:-/home/dravida/models/STYLE_GAN_filtered_disgust_thr${CONF_THRESH}}
+SURPRISE_OUT=${SURPRISE_OUT:-/home/dravida/models/STYLE_GAN_filtered_surprise_thr${CONF_THRESH}}
 
 # Cap the amount of synthetic data included from each synthetic-dir (per class here)
 MAX_PER_DIR=${MAX_PER_DIR:-500}
@@ -71,6 +71,16 @@ python -u scripts/filter_stylegan_images.py \
   --confidence-threshold "${CONF_THRESH}" \
   --output-dir "${DISGUST_OUT}"
 
+python - <<'PY'
+import numpy as np
+from pathlib import Path
+path = Path("${DISGUST_OUT}") / "synthetic_images.npy"
+arr = np.load(path) if path.exists() else np.zeros((0,))
+print(f"[CHECK] DISGUST accepted: {arr.shape[0] if hasattr(arr, 'shape') else 0}")
+if not hasattr(arr, 'shape') or arr.shape[0] == 0:
+    raise SystemExit("[FATAL] DISGUST filtering produced 0 images. Aborting.")
+PY
+
 python -u scripts/filter_stylegan_images.py \
   --input-dir "${SURPRISE_IN}" \
   --model-path "${MODEL_PATH}" \
@@ -78,6 +88,16 @@ python -u scripts/filter_stylegan_images.py \
   --target-class 6 \
   --confidence-threshold "${CONF_THRESH}" \
   --output-dir "${SURPRISE_OUT}"
+
+python - <<'PY'
+import numpy as np
+from pathlib import Path
+path = Path("${SURPRISE_OUT}") / "synthetic_images.npy"
+arr = np.load(path) if path.exists() else np.zeros((0,))
+print(f"[CHECK] SURPRISE accepted: {arr.shape[0] if hasattr(arr, 'shape') else 0}")
+if not hasattr(arr, 'shape') or arr.shape[0] == 0:
+    raise SystemExit("[FATAL] SURPRISE filtering produced 0 images. Aborting.")
+PY
 
 EXTRA_ARGS=()
 if [ "${MAX_PER_DIR}" -gt 0 ]; then
