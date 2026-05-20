@@ -22,6 +22,12 @@ from PIL import Image
 import argparse
 import traceback
 
+# Prefer the canonical training architecture if available.
+try:
+    from scripts.backbone import build_model_final_layers as build_model_final_layers_train
+except Exception:
+    build_model_final_layers_train = None
+
 # Custom layers per compatibilità modello
 class ExpandDimsLayer(Layer):
     def __init__(self, axis, **kwargs):
@@ -114,13 +120,26 @@ def load_fer_model(model_path, model_name='EfficientNetB1'):
     if p.name.endswith("_weights.h5"):
         print(f"[WEIGHTS] Detected weights-only file: {p}")
         initial_bias = np.zeros(7, dtype=np.float32)
-        model = build_model_final_layers(
-            learning_rate=0.001,
-            dropout_rate=0.5,
-            l2_reg=0.0,
-            initial_bias=initial_bias,
-            model_name=model_name,
-        )
+
+        # Build the *exact* architecture used during training to match weights.
+        if build_model_final_layers_train is not None:
+            model = build_model_final_layers_train(
+                learning_rate=0.001,
+                dropout_rate=0.5,
+                l2_reg=0.0,
+                initial_bias=initial_bias,
+                model_name=model_name,
+            )
+        else:
+            # Fallback to local builder (may not match training arch in some repos)
+            model = build_model_final_layers(
+                learning_rate=0.001,
+                dropout_rate=0.5,
+                l2_reg=0.0,
+                initial_bias=initial_bias,
+                model_name=model_name,
+            )
+
         model.load_weights(str(p))
         print("[WEIGHTS] Weights loaded successfully")
         return model
@@ -154,13 +173,22 @@ def load_fer_model(model_path, model_name='EfficientNetB1'):
                 print(f"[FALLBACK] Trying to load weights from: {w}")
                 initial_bias = np.zeros(7, dtype=np.float32)
                 # Hyperparams don't affect weight shapes; they only affect regularizers/dropout.
-                model = build_model_final_layers(
-                    learning_rate=0.001,
-                    dropout_rate=0.5,
-                    l2_reg=0.0,
-                    initial_bias=initial_bias,
-                    model_name=model_name,
-                )
+                if build_model_final_layers_train is not None:
+                    model = build_model_final_layers_train(
+                        learning_rate=0.001,
+                        dropout_rate=0.5,
+                        l2_reg=0.0,
+                        initial_bias=initial_bias,
+                        model_name=model_name,
+                    )
+                else:
+                    model = build_model_final_layers(
+                        learning_rate=0.001,
+                        dropout_rate=0.5,
+                        l2_reg=0.0,
+                        initial_bias=initial_bias,
+                        model_name=model_name,
+                    )
                 model.load_weights(str(w))
                 print("[FALLBACK] Weights loaded successfully")
                 return model
