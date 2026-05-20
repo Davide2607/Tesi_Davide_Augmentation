@@ -122,6 +122,33 @@ def load_fer_model(model_path, model_name='EfficientNetB1'):
         print(f"Error loading model: {e}")
         print("Full traceback:")
         traceback.print_exc()
+
+        # Robust fallback: load weights into a freshly built architecture.
+        # This avoids model deserialization issues when the .keras contains
+        # objects not available at inference time.
+        p = Path(model_path)
+        candidate_weights = []
+        if p.suffix.lower() == ".keras":
+            candidate_weights.append(p.with_name(p.stem + "_weights.h5"))
+        candidate_weights.append(p.with_suffix("") if p.name.endswith("_weights.h5") else p)
+
+        for w in candidate_weights:
+            w = Path(str(w))
+            if w.exists() and w.name.endswith("_weights.h5"):
+                print(f"[FALLBACK] Trying to load weights from: {w}")
+                initial_bias = np.zeros(7, dtype=np.float32)
+                # Hyperparams don't affect weight shapes; they only affect regularizers/dropout.
+                model = build_model_final_layers(
+                    learning_rate=0.001,
+                    dropout_rate=0.5,
+                    l2_reg=0.0,
+                    initial_bias=initial_bias,
+                    model_name=model_name,
+                )
+                model.load_weights(str(w))
+                print("[FALLBACK] Weights loaded successfully")
+                return model
+
         raise
 
 

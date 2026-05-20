@@ -31,7 +31,8 @@ export TF_CPP_MIN_LOG_LEVEL=1
 ORIG_H5=${ORIG_H5:-/home/dravida/data/dataset_unito.h5}
 
 # Model used as a "quality filter" (should be a decent NO-GAN model)
-MODEL_PATH=${MODEL_PATH:-/home/dravida/Tesi_Davide_Augmentation/model/pretrained_ConvNeXt_final_layers.keras}
+# Prefer *_weights.h5 when available (more robust than .keras deserialization)
+MODEL_PATH=${MODEL_PATH:-/home/dravida/Tesi_Davide_Augmentation/model/pretrained_ConvNeXt_final_layers_weights.h5}
 MODEL_NAME=${MODEL_NAME:-ConvNeXt}
 
 # StyleGAN generated image folders
