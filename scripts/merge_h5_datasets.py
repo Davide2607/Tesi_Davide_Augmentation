@@ -90,6 +90,44 @@ def _read_by_indices(ds, indices: np.ndarray):
     return data[inv]
 
 
+def _select_indices_per_class(
+    y: np.ndarray,
+    max_per_class: int,
+    max_total: int,
+    seed: int,
+) -> np.ndarray:
+    """Select indices from y with optional per-class and/or global caps.
+
+    - max_per_class <= 0 means no per-class cap.
+    - max_total <= 0 means no global cap.
+    """
+    y = np.asarray(y, dtype=np.int64)
+    n = int(y.shape[0])
+    if n == 0:
+        return np.zeros((0,), dtype=np.int64)
+
+    rng = np.random.default_rng(seed)
+
+    if max_per_class and max_per_class > 0:
+        selected_parts = []
+        for cls in np.unique(y):
+            cls_idx = np.flatnonzero(y == cls).astype(np.int64, copy=False)
+            if cls_idx.size > max_per_class:
+                take = rng.choice(cls_idx, size=max_per_class, replace=False)
+                selected_parts.append(take.astype(np.int64, copy=False))
+            else:
+                selected_parts.append(cls_idx)
+        selected = np.concatenate(selected_parts, axis=0) if selected_parts else np.zeros((0,), dtype=np.int64)
+    else:
+        selected = np.arange(n, dtype=np.int64)
+
+    if max_total and max_total > 0 and selected.size > max_total:
+        selected = rng.choice(selected, size=max_total, replace=False).astype(np.int64, copy=False)
+
+    # h5py advanced indexing prefers increasing order
+    return np.sort(selected)
+
+
 def merge_h5(
     a_path: Path,
     b_path: Path,
@@ -99,6 +137,8 @@ def merge_h5(
     chunk_size: int = 256,
     include_b_val: bool = False,
     assume_same_labels_if_missing_class_names: bool = False,
+    b_max_per_class: int = 0,
+    b_max_total: int = 0,
 ):
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -139,7 +179,28 @@ def merge_h5(
 
         n_a = int(xa_tr.shape[0])
         n_b = int(xb_tr.shape[0])
-        n_total = n_a + n_b
+
+        # Load B labels in memory once (cheap), apply label mapping and optionally downsample.
+        yb_all = np.asarray(yb_tr, dtype=np.int64)
+        if label_map is not None:
+            yb_all = label_map[yb_all]
+
+        b_selected = _select_indices_per_class(
+            y=yb_all,
+            max_per_class=int(b_max_per_class),
+            max_total=int(b_max_total),
+            seed=int(seed),
+        )
+        n_b_sel = int(b_selected.size)
+        n_total = n_a + n_b_sel
+
+        # Log B selection summary
+        if b_max_per_class or b_max_total:
+            print(f"[select B] original={n_b} selected={n_b_sel} b_max_per_class={b_max_per_class} b_max_total={b_max_total}")
+            if a_names is not None and n_b_sel:
+                binc = np.bincount(yb_all[b_selected], minlength=len(a_names))
+                txt = ", ".join([f"{a_names[i]}={int(binc[i])}" for i in range(len(a_names)) if int(binc[i]) > 0])
+                print(f"[select B] per-class selected: {txt}")
 
         x_shape = xa_tr.shape[1:]
         if tuple(xb_tr.shape[1:]) != tuple(x_shape):
@@ -211,23 +272,22 @@ def merge_h5(
                     print(f"[write A] {end}/{n_a}")
 
             out_offset = n_a
-            for start in range(0, n_b, chunk_size):
-                end = min(start + chunk_size, n_b)
-                x_b = np.array(xb_tr[start:end])
-                x_b = _align_scale_and_dtype(x_b, target_max, target_dtype)
-                y_b = np.array(yb_tr[start:end], dtype=np.int64)
-                if label_map is not None:
-                    y_b = label_map[y_b]
+            for start in range(0, n_b_sel, chunk_size):
+                end = min(start + chunk_size, n_b_sel)
+                idx_chunk = b_selected[start:end]
+                x_b = _read_by_indices(xb_tr, idx_chunk)
+                x_b = _align_scale_and_dtype(np.array(x_b), target_max, target_dtype)
+                y_b = yb_all[idx_chunk]
                 x_train_out[out_offset + start : out_offset + end] = x_b
-                y_train_out[out_offset + start : out_offset + end] = y_b.astype(np.int32)
-                if start == 0 or end == n_b or (start // chunk_size) % 50 == 0:
-                    print(f"[write B] {end}/{n_b}")
+                y_train_out[out_offset + start : out_offset + end] = y_b.astype(np.int32, copy=False)
+                if start == 0 or end == n_b_sel or (start // chunk_size) % 50 == 0:
+                    print(f"[write B] {end}/{n_b_sel}")
 
             print("\n[done]")
             print(f"A: {a_path}")
             print(f"B: {b_path}")
             print(f"OUT: {out_path}")
-            print(f"train: {n_a} + {n_b} = {n_total}")
+            print(f"train: {n_a} + {n_b_sel} = {n_total}")
             print(f"val (A only): {int(x_val_out.shape[0])}")
             print(f"class_names: {a_names}")
             return
@@ -253,13 +313,12 @@ def merge_h5(
                 y_block[a_mask] = y_a
 
             if b_idx.size:
-                x_b = _read_by_indices(xb_tr, b_idx)
-                y_b = _read_by_indices(yb_tr, b_idx).astype(np.int64)
-                if label_map is not None:
-                    y_b = label_map[y_b]
+                b_src = b_selected[b_idx]
+                x_b = _read_by_indices(xb_tr, b_src)
+                y_b = yb_all[b_src]
                 x_b = _align_scale_and_dtype(np.array(x_b), target_max, target_dtype)
                 x_block[b_mask] = x_b
-                y_block[b_mask] = y_b.astype(np.int32)
+                y_block[b_mask] = y_b.astype(np.int32, copy=False)
 
             x_train_out[out_start:out_end] = x_block
             y_train_out[out_start:out_end] = y_block
@@ -274,7 +333,7 @@ def merge_h5(
         print(f"A: {a_path}")
         print(f"B: {b_path}")
         print(f"OUT: {out_path}")
-        print(f"train: {n_a} + {n_b} = {n_total}")
+        print(f"train: {n_a} + {n_b_sel} = {n_total}")
         print(f"val (A only): {int(x_val_out.shape[0])}")
         print(f"class_names: {a_names}")
 
@@ -312,6 +371,18 @@ def parse_args():
         action="store_true",
         help="If B has no class_names, assume its label IDs already match A",
     )
+    p.add_argument(
+        "--b-max-per-class",
+        type=int,
+        default=0,
+        help="Optional cap on how many B train samples to include per class (0 = no cap)",
+    )
+    p.add_argument(
+        "--b-max-total",
+        type=int,
+        default=0,
+        help="Optional cap on total B train samples to include (0 = no cap)",
+    )
     return p.parse_args()
 
 
@@ -326,6 +397,8 @@ def main():
         chunk_size=args.chunk_size,
         include_b_val=args.include_b_val,
         assume_same_labels_if_missing_class_names=args.assume_same_labels_if_missing_class_names,
+        b_max_per_class=args.b_max_per_class,
+        b_max_total=args.b_max_total,
     )
 
 

@@ -28,14 +28,25 @@ OUT_PATH=${OUT_PATH:-/home/dravida/data/dataset_unito_con_GAN.h5}
 SEED=${SEED:-42}
 CHUNK_SIZE=${CHUNK_SIZE:-2048}
 NO_SHUFFLE=${NO_SHUFFLE:-1}
+B_MAX_PER_CLASS=${B_MAX_PER_CLASS:-0}
+B_MAX_TOTAL=${B_MAX_TOTAL:-0}
 
 echo "[INFO] A_PATH=${A_PATH}"
 echo "[INFO] B_PATH=${B_PATH}"
 echo "[INFO] OUT_PATH=${OUT_PATH}"
+echo "[INFO] B_MAX_PER_CLASS=${B_MAX_PER_CLASS} B_MAX_TOTAL=${B_MAX_TOTAL}"
 
 EXTRA_ARGS=()
 if [ "$NO_SHUFFLE" -eq 1 ]; then
   EXTRA_ARGS+=(--no-shuffle)
+fi
+
+if [ "$B_MAX_PER_CLASS" -gt 0 ]; then
+  EXTRA_ARGS+=(--b-max-per-class "$B_MAX_PER_CLASS")
+fi
+
+if [ "$B_MAX_TOTAL" -gt 0 ]; then
+  EXTRA_ARGS+=(--b-max-total "$B_MAX_TOTAL")
 fi
 
 python -u scripts/merge_h5_datasets.py \
