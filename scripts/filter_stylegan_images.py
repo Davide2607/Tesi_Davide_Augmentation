@@ -106,6 +106,24 @@ def build_model_final_layers(learning_rate, dropout_rate, l2_reg, initial_bias, 
 def load_fer_model(model_path, model_name='EfficientNetB1'):
     """Load pre-trained FER model with custom objects"""
     print(f"Loading FER model: {model_path}")
+
+    model_path = str(model_path)
+    p = Path(model_path)
+
+    # If the user points directly to a weights-only file, load weights into a fresh model.
+    if p.name.endswith("_weights.h5"):
+        print(f"[WEIGHTS] Detected weights-only file: {p}")
+        initial_bias = np.zeros(7, dtype=np.float32)
+        model = build_model_final_layers(
+            learning_rate=0.001,
+            dropout_rate=0.5,
+            l2_reg=0.0,
+            initial_bias=initial_bias,
+            model_name=model_name,
+        )
+        model.load_weights(str(p))
+        print("[WEIGHTS] Weights loaded successfully")
+        return model
     
     custom_objects = {
         'ExpandDimsLayer': ExpandDimsLayer,
@@ -126,11 +144,9 @@ def load_fer_model(model_path, model_name='EfficientNetB1'):
         # Robust fallback: load weights into a freshly built architecture.
         # This avoids model deserialization issues when the .keras contains
         # objects not available at inference time.
-        p = Path(model_path)
         candidate_weights = []
         if p.suffix.lower() == ".keras":
             candidate_weights.append(p.with_name(p.stem + "_weights.h5"))
-        candidate_weights.append(p.with_suffix("") if p.name.endswith("_weights.h5") else p)
 
         for w in candidate_weights:
             w = Path(str(w))
