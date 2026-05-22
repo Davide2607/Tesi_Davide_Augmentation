@@ -31,6 +31,18 @@ export FIT_MAX_QUEUE_SIZE="${FIT_MAX_QUEUE_SIZE:-16}"
 echo "[INFO] DATASET_H5=${DATASET_H5}"
 echo "[INFO] MODEL_DIR=${MODEL_DIR}"
 
+# Finetuning loads the final-layers model from MODEL_DIR.
+if [ ! -d "${MODEL_DIR}/pretrained_ConvNeXt_final_layers" ] && [ ! -f "${MODEL_DIR}/pretrained_ConvNeXt_final_layers.keras" ] && [ ! -f "${MODEL_DIR}/pretrained_ConvNeXt_final_layers.h5" ] && [ ! -f "${MODEL_DIR}/pretrained_ConvNeXt_final_layers_weights.h5" ]; then
+	echo "[FATAL] Pretrained final-layers model not found in MODEL_DIR=${MODEL_DIR}."
+	echo "        Expected one of:"
+	echo "          - ${MODEL_DIR}/pretrained_ConvNeXt_final_layers (SavedModel dir)"
+	echo "          - ${MODEL_DIR}/pretrained_ConvNeXt_final_layers.keras"
+	echo "          - ${MODEL_DIR}/pretrained_ConvNeXt_final_layers.h5"
+	echo "          - ${MODEL_DIR}/pretrained_ConvNeXt_final_layers_weights.h5"
+	echo "        Run sbatch/convnext_final.sbatch first with the same MODEL_DIR."
+	exit 2
+fi
+
 FT_LR="${FT_LR:-0.000288331559788701}"
 FT_DROPOUT="${FT_DROPOUT:-0.1624074561769746}"
 FT_L2="${FT_L2:-0.016443457513284063}"
