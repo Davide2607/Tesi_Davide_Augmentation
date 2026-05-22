@@ -48,6 +48,10 @@ FT_DROPOUT="${FT_DROPOUT:-0.1624074561769746}"
 FT_L2="${FT_L2:-0.016443457513284063}"
 echo "[INFO] FT_LR=${FT_LR} FT_DROPOUT=${FT_DROPOUT} FT_L2=${FT_L2}"
 
+# How many backbone layers to unfreeze (ConvNeXt only). Default matches scripts/backbone.py.
+export FT_UNFREEZE="${FT_UNFREEZE:-241}"
+echo "[INFO] FT_UNFREEZE=${FT_UNFREEZE}"
+
 # Finetuning-only augmentation overrides (train only).
 # These env vars are read by scripts/loading_data.py.
 # You can still override them at submission time.

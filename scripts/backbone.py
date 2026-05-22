@@ -170,7 +170,10 @@ def build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, mo
         backbone = model.get_layer('base_model')
         backbone.trainable = True
         ## prima era unfreeze = 10
-        unfreeze = 241
+        try:
+            unfreeze = int(os.environ.get('FT_UNFREEZE', '241'))
+        except Exception:
+            unfreeze = 241
     elif model_name == 'InceptionV3':
          # Scarica il modello dal server locale
         with tf.keras.utils.custom_object_scope(custom_objects):
@@ -189,7 +192,14 @@ def build_model_finetuning(learning_rate, dropout_rate, l2_reg, initial_bias, mo
     pre_classification = tf.keras.Sequential([tf.keras.layers.Dense(32, activation='relu', kernel_regularizer = l2(l2_reg)),
                                               tf.keras.layers.BatchNormalization()], name='pre_classification')
 
-    fine_tune_from = len(backbone.layers) - unfreeze
+    # Clamp unfreeze to a valid range
+    total_layers = len(backbone.layers)
+    if unfreeze < 0:
+        unfreeze = 0
+    if unfreeze > total_layers:
+        unfreeze = total_layers
+
+    fine_tune_from = total_layers - unfreeze
     for layer in backbone.layers[:fine_tune_from]:
         layer.trainable = False
     for layer in backbone.layers[fine_tune_from:]:

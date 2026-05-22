@@ -28,6 +28,10 @@ export TF_CPP_MIN_LOG_LEVEL=1
 echo "[INFO] DATASET_H5=${DATASET_H5}"
 echo "[INFO] MODEL_DIR=${MODEL_DIR}"
 
+# How many backbone layers to unfreeze (ConvNeXt only).
+export FT_UNFREEZE="${FT_UNFREEZE:-241}"
+echo "[INFO] FT_UNFREEZE=${FT_UNFREEZE}"
+
 # Finetuning optimizer loads the final-layers model from MODEL_DIR.
 if [ ! -d "${MODEL_DIR}/pretrained_ConvNeXt_final_layers" ] && [ ! -f "${MODEL_DIR}/pretrained_ConvNeXt_final_layers.keras" ] && [ ! -f "${MODEL_DIR}/pretrained_ConvNeXt_final_layers.h5" ]; then
 	echo "[FATAL] Pretrained final-layers model not found in MODEL_DIR=${MODEL_DIR}."
