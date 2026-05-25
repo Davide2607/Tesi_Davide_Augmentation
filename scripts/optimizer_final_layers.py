@@ -71,6 +71,10 @@ def parse_args():
     parser.add_argument('--trial_epochs', type=int, default=8, help='Max epochs per BO trial')
     parser.add_argument('--init_points', type=int, default=4, help='Initial random BO points')
     parser.add_argument('--n_iter', type=int, default=20, help='BO optimization iterations')
+    parser.add_argument('--lr_min', type=float, default=1e-4, help='BO range min for learning_rate')
+    parser.add_argument('--lr_max', type=float, default=1e-3, help='BO range max for learning_rate')
+    parser.add_argument('--l2_min', type=float, default=1e-3, help='BO range min for l2_reg')
+    parser.add_argument('--l2_max', type=float, default=1e-1, help='BO range max for l2_reg')
     return parser.parse_args()
     
 def main():
@@ -99,8 +103,8 @@ def main():
     # Imposta il range degli iperparametri
     #per il troncamento nuovo dropout rate impostato fisso a 0.5 per EfficientNetB1 e 0.3 per ResNet
     pbounds = {
-        'learning_rate': (1e-4, 1e-3),
-        'l2_reg': (1e-3, 1e-1)
+        'learning_rate': (args.lr_min, args.lr_max),
+        'l2_reg': (args.l2_min, args.l2_max)
     }
   
     # Funzione per caricare i dati e inizializzare il modello

@@ -2,8 +2,20 @@ import argparse
 import os
 from pathlib import Path
 
-import h5py
 import numpy as np
+
+try:
+    import h5py
+except ModuleNotFoundError as e:
+    raise SystemExit(
+        "[ERROR] Missing dependency 'h5py'.\n\n"
+        "If you're on the HPC, you likely need to use the conda env used for training:\n"
+        "  module load miniconda3/3.13.25\n"
+        "  eval \"$(conda shell.bash hook)\"\n"
+        "  conda activate fer_augmentation\n\n"
+        "If the env exists but is missing the package:\n"
+        "  python -m pip install h5py\n"
+    ) from e
 
 
 def _decode_class_names(raw):
