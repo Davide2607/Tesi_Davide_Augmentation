@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Script orchestratore StyleGAN2-ADA (FER) senza magic Colab.
+"""Script orchestratore StyleGAN2-ADA (FER).
 
 Funzioni chiave:
 - Clona la repo ufficiale NVLabs se manca.
