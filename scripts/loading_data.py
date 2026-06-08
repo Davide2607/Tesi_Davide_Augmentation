@@ -42,9 +42,18 @@ def loading_data():
                 y_val = np.array(f['y_val'])
                 class_names = [_normalize_class_name(name.decode('utf-8')) for name in f['class_names']]
                 return X_train, y_train, X_val, y_val, class_names
-            else:
-                x = np.array(f['X_test'])
-                y = np.array(f['y_test'])
+                else:
+                    if 'X_test' in f and 'y_test' in f:
+                        x = np.array(f['X_test'])
+                        y = np.array(f['y_test'])
+                    elif all(k in f for k in ('X_train', 'y_train', 'X_val', 'y_val')):
+                        x = np.concatenate([np.array(f['X_train']), np.array(f['X_val'])], axis=0)
+                        y = np.concatenate([np.array(f['y_train']), np.array(f['y_val'])], axis=0)
+                        print(f"[WARN] {file_path} has no X_test/y_test. Using X_train+X_val as test set.")
+                    else:
+                        raise KeyError(
+                            f"{file_path} must contain X_test/y_test or X_train,y_train,X_val,y_val for test loading"
+                        )
                 if 'class_names' in f:
                     class_names = [_normalize_class_name(name.decode('utf-8')) for name in f['class_names']]
                 return x, y, class_names
