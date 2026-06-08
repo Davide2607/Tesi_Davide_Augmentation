@@ -17,6 +17,9 @@ class _NoOpRun:
     def upload(self, value):
         return None
 
+    def stop(self):
+        return None
+
 
 def init_neptune():
     project = os.environ.get("NEPTUNE_PROJECT", "").strip()
