@@ -20,10 +20,17 @@ def loading_data():
         name = name.strip()
         if name.startswith('synthetic_'):
             name = name[len('synthetic_'):]
-        # Common typo observed in some generated datasets
-        if name == 'EAR':
-            name = 'FEAR'
-        return name
+        normalized = {
+            'anger': 'ANGRY',
+            'disgust': 'DISGUST',
+            'fear': 'FEAR',
+            'ear': 'FEAR',
+            'happiness': 'HAPPY',
+            'neutrality': 'NEUTRAL',
+            'sadness': 'SAD',
+            'surprise': 'SURPRISE',
+        }
+        return normalized.get(name.lower(), name)
 
     def load_data_and_labels(file_path, info):
         class_names = None
@@ -44,7 +51,7 @@ def loading_data():
 
     file_path = os.path.expanduser('~/data') # path del dataset (uses HOME)
     train_path = os.environ.get('DATASET_H5', os.path.join(file_path, 'dataset.h5'))
-    test_path = os.path.join(file_path, 'test_data_adele.h5')
+    test_path = os.environ.get('TEST_DATASET_H5', os.path.join(file_path, 'test_data_adele.h5'))
 
     X_train, y_train, X_val, y_val, class_names = load_data_and_labels(train_path, 'train')
     X_test, y_test, test_class_names = load_data_and_labels(test_path, 'test')

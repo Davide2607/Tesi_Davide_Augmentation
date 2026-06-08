@@ -22,9 +22,17 @@ def _normalize_class_name(name: str) -> str:
     name = name.strip()
     if name.startswith("synthetic_"):
         name = name[len("synthetic_") :]
-    if name == "EAR":
-        name = "FEAR"
-    return name
+        normalized = {
+            "anger": "ANGRY",
+            "disgust": "DISGUST",
+            "fear": "FEAR",
+            "ear": "FEAR",
+            "happiness": "HAPPY",
+            "neutrality": "NEUTRAL",
+            "sadness": "SAD",
+            "surprise": "SURPRISE",
+        }
+        return normalized.get(name.lower(), name)
 
 
 def _estimate_max_value(x_ds, sample_n: int = 256) -> float:

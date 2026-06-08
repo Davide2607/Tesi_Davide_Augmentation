@@ -21,7 +21,8 @@ set -u
 
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
-export DATASET_H5="${DATASET_H5:-/home/dravida/data/dataset_unito_con_GAN.h5}"
+export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_zero.h5}"
+export TEST_DATASET_H5="${TEST_DATASET_H5:-/home/dravida/data/KDEF.h5}"
 export MODEL_DIR="${MODEL_DIR:-model}"
 export BATCH_SIZE="${BATCH_SIZE:-16}"
 export FIT_WORKERS="${FIT_WORKERS:-4}"

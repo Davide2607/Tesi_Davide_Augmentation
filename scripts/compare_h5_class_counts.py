@@ -33,10 +33,17 @@ def _normalize_class_name(name: str) -> str:
     name = name.strip()
     if name.startswith("synthetic_"):
         name = name[len("synthetic_") :]
-    # Common typo observed in some merged/generated datasets
-    if name == "EAR":
-        name = "FEAR"
-    return name
+    normalized = {
+        "anger": "ANGRY",
+        "disgust": "DISGUST",
+        "fear": "FEAR",
+        "ear": "FEAR",
+        "happiness": "HAPPY",
+        "neutrality": "NEUTRAL",
+        "sadness": "SAD",
+        "surprise": "SURPRISE",
+    }
+    return normalized.get(name.lower(), name)
 
 
 def _load_split_counts(path: Path) -> tuple[list[str] | None, np.ndarray, np.ndarray]:

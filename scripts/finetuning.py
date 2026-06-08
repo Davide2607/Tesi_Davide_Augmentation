@@ -45,9 +45,17 @@ def log_extra_test_metrics(model, test_generator, run, model_name, stage_name):
         name = name.strip()
         if name.startswith('synthetic_'):
             name = name[len('synthetic_'):]
-        if name == 'EAR':
-            name = 'FEAR'
-        return name
+        normalized = {
+            'anger': 'ANGRY',
+            'disgust': 'DISGUST',
+            'fear': 'FEAR',
+            'ear': 'FEAR',
+            'happiness': 'HAPPY',
+            'neutrality': 'NEUTRAL',
+            'sadness': 'SAD',
+            'surprise': 'SURPRISE',
+        }
+        return normalized.get(name.lower(), name)
 
     def _try_get_class_names() -> list[str] | None:
         dataset_path = os.environ.get('DATASET_H5', '').strip()

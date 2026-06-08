@@ -23,6 +23,23 @@ import numpy as np
 from PIL import Image
 
 
+def _normalize_class_name(name: str) -> str:
+    name = name.strip()
+    if name.startswith('synthetic_'):
+        name = name[len('synthetic_'):]
+    normalized = {
+        'anger': 'ANGRY',
+        'disgust': 'DISGUST',
+        'fear': 'FEAR',
+        'ear': 'FEAR',
+        'happiness': 'HAPPY',
+        'neutrality': 'NEUTRAL',
+        'sadness': 'SAD',
+        'surprise': 'SURPRISE',
+    }
+    return normalized.get(name.lower(), name)
+
+
 def parse_args():
     p = argparse.ArgumentParser(description="Estrai una classe da un dataset h5 in PNG")
     p.add_argument("--h5", type=Path, required=True, help="Percorso al file dataset.h5")
@@ -40,7 +57,7 @@ def load_dataset(h5_path: Path):
         y_train = np.array(f["y_train"])
         X_val = np.array(f["X_val"])
         y_val = np.array(f["y_val"])
-        class_names = [c.decode("utf-8") for c in f["class_names"]]
+        class_names = [_normalize_class_name(c.decode("utf-8")) for c in f["class_names"]]
     X = np.concatenate([X_train, X_val])
     y = np.concatenate([y_train, y_val])
     return X, y, class_names
