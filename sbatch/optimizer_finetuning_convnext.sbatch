@@ -17,7 +17,7 @@ set -u
 
 mkdir -p /home/dravida/models/FER-Augmentation/out_err
 cd /home/dravida/Tesi_Davide_Augmentation || exit 1
-export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_primo_metodo.h5}"
+export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_secondo_metodo.h5}"
 export TEST_DATASET_H5="${TEST_DATASET_H5:-/home/dravida/data/KDEF.h5}"
 export MODEL_DIR="${MODEL_DIR:-model}"
 export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
