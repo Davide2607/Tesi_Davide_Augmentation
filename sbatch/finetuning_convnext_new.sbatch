@@ -44,9 +44,9 @@ if [ ! -d "${MODEL_DIR}/pretrained_ConvNeXt_final_layers" ] && [ ! -f "${MODEL_D
 	exit 2
 fi
 
-FT_LR="${FT_LR:-0.000288331559788701}"
-FT_DROPOUT="${FT_DROPOUT:-0.1624074561769746}"
-FT_L2="${FT_L2:-0.016443457513284063}"
+FT_LR="${FT_LR:-8.24273206741323e-05}"
+FT_DROPOUT="${FT_DROPOUT:-0.2763510573541357}"
+FT_L2="${FT_L2:-0.029384464320590022}"
 echo "[INFO] FT_LR=${FT_LR} FT_DROPOUT=${FT_DROPOUT} FT_L2=${FT_L2}"
 
 # How many backbone layers to unfreeze (ConvNeXt only). Default matches scripts/backbone.py.
