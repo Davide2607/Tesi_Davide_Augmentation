@@ -28,8 +28,8 @@ def load_original_h5(h5_path: str):
         class_names = [c.decode('utf-8') if isinstance(c, bytes) else c for c in f['class_names']]
     return X_train, y_train, X_val, y_val, class_names
 
-def load_png_images(directory: str, max_images: Optional[int] = None) -> np.ndarray:
-    """Leggi tutte le immagini PNG da directory (seed0000.png, seed0001.png, ...)."""
+def load_png_images(directory: str, target_size: int = 128, max_images: Optional[int] = None) -> np.ndarray:
+    """Leggi tutte le immagini PNG da directory (seed0000.png, seed0001.png, ...) e ridimensiona."""
     png_files = sorted(Path(directory).glob('seed*.png'))
     
     if max_images:
@@ -39,6 +39,8 @@ def load_png_images(directory: str, max_images: Optional[int] = None) -> np.ndar
     for i, png_file in enumerate(png_files):
         # Leggi con PIL e converti a RGB
         img = Image.open(png_file).convert('RGB')
+        # Ridimensiona a target_size
+        img = img.resize((target_size, target_size), Image.LANCZOS)
         img_array = np.array(img, dtype=np.uint8)
         images.append(img_array)
         
