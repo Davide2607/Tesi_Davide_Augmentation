@@ -16,8 +16,20 @@ conda activate stylegan2
 
 cd /home/dravida/Tesi_Davide_Augmentation/stylegan2-ada-pytorch
 
-SEEDS="${SEEDS:-0-499}"
-OUTDIR="${OUTDIR:-/tmp/stylegan_gen}"
+# Parse arguments or use environment variables
+EMOTION="${1:-}"
+START_SEED="${2:-0}"
+END_SEED="${3:-499}"
+
+if [ -z "$EMOTION" ]; then
+  SEEDS="${SEEDS:-0-499}"
+  OUTDIR="${OUTDIR:-/tmp/stylegan_gen}"
+else
+  EMOTION_LOWER=$(echo "$EMOTION" | tr '[:upper:]' '[:lower:]')
+  SEEDS="$START_SEED-$END_SEED"
+  OUTDIR="/home/dravida/models/stylegan2_generated_$EMOTION_LOWER"
+fi
+
 NETWORK="${NETWORK:-ffhq.pkl}"
 
 mkdir -p "$OUTDIR"
