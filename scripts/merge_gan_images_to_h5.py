@@ -16,7 +16,6 @@ import h5py
 import numpy as np
 from pathlib import Path
 from typing import Optional
-import cv2
 from PIL import Image
 
 def load_original_h5(h5_path: str):
