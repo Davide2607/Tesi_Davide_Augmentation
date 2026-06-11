@@ -20,7 +20,14 @@ cd /home/dravida/Tesi_Davide_Augmentation || exit 1
 export DATASET_H5="${DATASET_H5:-/home/dravida/data/database_zero_primo_augmented.h5}"
 export TEST_DATASET_H5="${TEST_DATASET_H5:-/home/dravida/data/KDEF.h5}"
 export MODEL_DIR="${MODEL_DIR:-model}"
-export PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
+ecd /home/dravida/Tesi_Davide_Augmentation/stylegan2-ada-pytorch
+
+# Crea dataset per StyleGAN2 (con conditioning)
+python dataset_tool.py create_from_images \
+  --source /tmp/primo_angry \
+  --dest /tmp/stylegan2_dataset_angry.zip
+
+# Ripeti per le 7 emozioni (o crea script)xport PYTHONPATH=/home/dravida/Tesi_Davide_Augmentation/scripts:/home/dravida/Tesi_Davide_Augmentation:${PYTHONPATH:-}
 export LD_LIBRARY_PATH="${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH:-}"
 export XLA_FLAGS="--xla_gpu_cuda_data_dir=${CONDA_PREFIX}"
 export TF_FORCE_GPU_ALLOW_GROWTH=true
