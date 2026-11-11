@@ -1,4 +1,5 @@
-# Tesi_Davide_Augmentation
-Tesi Polito miglioramento accuracy riconoscimento espressioni facciali tramite tecniche di data augmentation
- 
-Author: Davide Ravida’
+# Davide_Augmentation_Thesis
+
+PoliTO thesis project focused on improving facial expression recognition accuracy through data augmentation techniques.
+
+Author: Davide Ravida
